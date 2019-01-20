@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -8,12 +9,25 @@ namespace WebApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration, IApplicationLifetime lifetime)
         {
             Configuration = configuration;
+
+            lifetime.ApplicationStarted.Register(OnApplicationStarted);
+            lifetime.ApplicationStopped.Register(OnApplicationStopped);
         }
 
-        public IConfiguration Configuration { get; }
+        private void OnApplicationStarted()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnApplicationStopped()
+        {
+            throw new NotImplementedException();
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
