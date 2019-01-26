@@ -4,39 +4,27 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WebApi.Tools;
 
 namespace WebApi
 {
     public class Startup
     {
+        private DbFactory _dbFactory;
+
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration, IApplicationLifetime lifetime)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-
-            lifetime.ApplicationStarted.Register(OnApplicationStarted);
-            lifetime.ApplicationStopped.Register(OnApplicationStopped);
         }
 
-        private void OnApplicationStarted()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void OnApplicationStopped()
-        {
-            throw new NotImplementedException();
-        }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IApplicationLifetime lifetime, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -44,12 +32,25 @@ namespace WebApi
             }
             else
             {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
+            lifetime.ApplicationStarted.Register(OnApplicationStarted);
+            lifetime.ApplicationStopped.Register(OnApplicationStopped);
+   
             app.UseHttpsRedirection();
             app.UseMvc();
+        }
+
+        private void OnApplicationStarted()
+        {
+            _dbFactory = new DbFactory("content");
+            _dbFactory.InitDatabase();
+        }
+
+        private void OnApplicationStopped()
+        {
+            _dbFactory.Dispose();
         }
     }
 }
