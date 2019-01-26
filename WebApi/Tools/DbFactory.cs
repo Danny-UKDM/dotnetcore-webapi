@@ -7,13 +7,13 @@ using WebApi.Models;
 
 namespace WebApi.Tools
 {
-    internal class DbFactory : IDisposable
+    public class DbFactory : IDisposable
     {
         public DbConnection Connection { get; private set; }
         public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
 
-        private readonly string _baseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
+        private readonly string _baseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
         public string ConnectionString => $"{_baseConnectionString};Database={Database}";
 
         private readonly Event TestEvent1 = new Event
@@ -59,11 +59,9 @@ namespace WebApi.Tools
         {
             Database = "content";
             ProviderFactory = providerFactory;
-
-            InitDatabase();
         }
 
-        private void InitDatabase()
+        public void InitDatabase()
         {
             CreateDatabase();
             OpenConnection();
@@ -89,17 +87,18 @@ namespace WebApi.Tools
         private void CreateTable()
         {
             Connection.Execute(
-                @"create table events(
+                @"create table events (
                     id bigserial primary key,
                     eventId int not null,
                     partnerId uuid not null,
-                    eventName varchar(100) not null, 
-                    addressLine1 varchar(100) not null
-                    postalCode varchar(10) not null
-                    city varchar(20) not null
-                    country varchar(20) not null
-                    latitude double not null
-                    longitude double not null)"
+                    eventName varchar(100) not null,
+                    addressLine1 varchar(100) not null,
+                    postalCode varchar(10) not null,
+                    city varchar(20) not null,
+                    country varchar(20) not null,
+                    latitude float8 not null,
+                    longitude float8 not null
+                )"
             );
         }
 
@@ -107,27 +106,28 @@ namespace WebApi.Tools
         {
             var insertSql = @"
                     insert into events (
-                        eventId, 
-                        partnerId, 
-                        eventName, 
-                        addressLine1, 
-                        postalCode, 
-                        city, 
-                        country, 
-                        latitude, 
+                        eventId,
+                        partnerId,
+                        eventName,
+                        addressLine1,
+                        postalCode,
+                        city,
+                        country,
+                        latitude,
                         longitude
-                        ) 
-                        values 
+                        )
+                        values
                         (
-                        @EventId, 
-                        @PartnerId, 
-                        @EventName, 
-                        @AddressLine1, 
-                        @PostalCode, 
-                        @City, 
-                        @Country
-                        @Latitude
-                        @Longitude)";
+                        @EventId,
+                        @PartnerId,
+                        @EventName,
+                        @AddressLine1,
+                        @PostalCode,
+                        @City,
+                        @Country,
+                        @Latitude,
+                        @Longitude
+                    )";
 
             Connection.Execute(insertSql, TestEvent1);
             Connection.Execute(insertSql, TestEvent2);
@@ -144,13 +144,14 @@ namespace WebApi.Tools
         public void Dispose()
         {
             Connection.Dispose();
-            DestroyTestDatabase();
+            DestroyDatabase();
         }
 
-        private void DestroyTestDatabase()
+        private void DestroyDatabase()
         {
             using (var conn = new NpgsqlConnection(_baseConnectionString))
             {
+                conn.Execute($"revoke connect on database {Database} from public;");
                 conn.Execute($"drop database {Database}");
             }
         }
