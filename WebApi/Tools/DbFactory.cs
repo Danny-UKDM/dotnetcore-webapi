@@ -55,10 +55,10 @@ namespace WebApi.Tools
             Longitude = new Random().Next(-180, 180)
         };
 
-        public DbFactory(DbProviderFactory providerFactory)
+        public DbFactory(string database)
         {
-            Database = "content";
-            ProviderFactory = providerFactory;
+            Database = database;
+            ProviderFactory = NpgsqlFactory.Instance;
         }
 
         public void InitDatabase()
