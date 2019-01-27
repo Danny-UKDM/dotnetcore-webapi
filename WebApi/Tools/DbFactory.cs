@@ -2,6 +2,7 @@
 using System.Data.Common;
 using Badger.Data;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using WebApi.Models;
 
@@ -12,6 +13,8 @@ namespace WebApi.Tools
         public DbConnection Connection { get; private set; }
         public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
+
+        private ILogger _logger = ApplicationLogging.CreateLogger<DbFactory>();
 
         private readonly string _baseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
         public string ConnectionString => $"{_baseConnectionString};Database={Database}";
@@ -71,35 +74,61 @@ namespace WebApi.Tools
 
         private void CreateDatabase()
         {
-            using (var conn = new NpgsqlConnection(_baseConnectionString))
+            _logger.LogInformation($"Creating database: {Database}");
+            try
             {
-                conn.Execute($"create database {Database}");
+                using (var conn = new NpgsqlConnection(_baseConnectionString))
+                {
+                    conn.Execute($"create database {Database}");
+                }
+                _logger.LogInformation($"Successfully created database: {Database}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error creating database: {Database}", ex);
             }
         }
 
         private void OpenConnection()
         {
-            Connection = ProviderFactory.CreateConnection();
-            Connection.ConnectionString = ConnectionString;
-            Connection.Open();
+            _logger.LogInformation("Opening connection.");
+            try
+            {
+                Connection = ProviderFactory.CreateConnection();
+                Connection.ConnectionString = ConnectionString;
+                Connection.Open();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Erroring opening connection.", ex);
+            }
         }
 
         private void CreateTable()
         {
-            Connection.Execute(
-                @"create table events (
-                    id bigserial primary key,
-                    eventId int not null,
-                    partnerId uuid not null,
-                    eventName varchar(100) not null,
-                    addressLine1 varchar(100) not null,
-                    postalCode varchar(10) not null,
-                    city varchar(20) not null,
-                    country varchar(20) not null,
-                    latitude float8 not null,
-                    longitude float8 not null
-                )"
-            );
+            _logger.LogInformation("Creating table.");
+            try
+            {
+                Connection.Execute(
+                    @"create table events
+                    (
+                        id bigserial primary key,
+                        eventId int not null,
+                        partnerId uuid not null,
+                        eventName varchar(100) not null,
+                        addressLine1 varchar(100) not null,
+                        postalCode varchar(10) not null,
+                        city varchar(20) not null,
+                        country varchar(20) not null,
+                        latitude float8 not null,
+                        longitude float8 not null
+                    )"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error creating table.", ex);
+            }
         }
 
         private void InsertTestData()
@@ -129,9 +158,17 @@ namespace WebApi.Tools
                         @Longitude
                     )";
 
-            Connection.Execute(insertSql, TestEvent1);
-            Connection.Execute(insertSql, TestEvent2);
-            Connection.Execute(insertSql, TestEvent3);
+            _logger.LogInformation("Inserting test data.");
+            try
+            {
+                Connection.Execute(insertSql, TestEvent1);
+                Connection.Execute(insertSql, TestEvent2);
+                Connection.Execute(insertSql, TestEvent3);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error inserting test data", ex);
+            }
         }
 
         public ISessionFactory CreateSessionFactory()
@@ -143,16 +180,28 @@ namespace WebApi.Tools
 
         public void Dispose()
         {
-            Connection.Dispose();
             DestroyDatabase();
+            Connection.Close();
         }
 
         private void DestroyDatabase()
         {
-            using (var conn = new NpgsqlConnection(_baseConnectionString))
+            _logger.LogInformation($"Dropping database: {Database}");
+            try
             {
-                conn.Execute($"revoke connect on database {Database} from public;");
-                conn.Execute($"drop database {Database}");
+                using (var conn = new NpgsqlConnection(_baseConnectionString))
+                {
+                    conn.Execute($@"
+                        select pg_terminate_backend(pg_stat_activity.pid)
+                        from pg_stat_activity
+                        where pg_stat_activity.datname = '{Database}'");
+
+                    conn.Execute($"drop database {Database}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error dropping database: {ex.Message}");
             }
         }
     }
