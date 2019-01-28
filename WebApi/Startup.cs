@@ -65,7 +65,6 @@ namespace WebApi
         {
             _logger.LogInformation("Starting OnApplicationStopped.");
 
-            //todo: figure out why on earth this doesn't work.
             _dbFactory.Dispose();
         }
     }

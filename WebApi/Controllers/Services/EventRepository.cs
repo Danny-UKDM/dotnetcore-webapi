@@ -13,7 +13,7 @@ namespace WebApi.Controllers.Services
     public class EventRepository : IEventRepository
     {
         private readonly ISessionFactory _sessionFactory;
-        private ILogger _logger = ApplicationLogging.CreateLogger<EventRepository>();
+        private readonly ILogger _logger = ApplicationLogging.CreateLogger<EventRepository>();
 
         public EventRepository()
         {

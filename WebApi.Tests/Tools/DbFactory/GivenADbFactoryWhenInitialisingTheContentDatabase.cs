@@ -33,7 +33,7 @@ namespace WebApi.Tests.Tools.DbFactory
             }
         }
 
-        class QueryForAllRowsCount : IQuery<long>
+        private class QueryForAllRowsCount : IQuery<long>
         {
             public IPreparedQuery<long> Prepare(IQueryBuilder queryBuilder)
             {

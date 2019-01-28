@@ -14,10 +14,10 @@ namespace WebApi.Tools
         public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
 
-        private ILogger _logger = ApplicationLogging.CreateLogger<DbFactory>();
+        private readonly ILogger _logger = ApplicationLogging.CreateLogger<DbFactory>();
 
-        private readonly string _baseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
-        public string ConnectionString => $"{_baseConnectionString};Database={Database}";
+        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
+        public string ConnectionString => $"{BaseConnectionString};Database={Database}";
 
         private readonly Event TestEvent1 = new Event
         {
@@ -77,7 +77,7 @@ namespace WebApi.Tools
             _logger.LogInformation($"Creating database: {Database}");
             try
             {
-                using (var conn = new NpgsqlConnection(_baseConnectionString))
+                using (var conn = new NpgsqlConnection(BaseConnectionString))
                 {
                     conn.Execute($"create database {Database}");
                 }
@@ -133,7 +133,7 @@ namespace WebApi.Tools
 
         private void InsertTestData()
         {
-            var insertSql = @"
+            const string insertSql = @"
                     insert into events (
                         eventId,
                         partnerId,
@@ -189,7 +189,7 @@ namespace WebApi.Tools
             _logger.LogInformation($"Dropping database: {Database}");
             try
             {
-                using (var conn = new NpgsqlConnection(_baseConnectionString))
+                using (var conn = new NpgsqlConnection(BaseConnectionString))
                 {
                     conn.Execute($@"
                         select pg_terminate_backend(pg_stat_activity.pid)
