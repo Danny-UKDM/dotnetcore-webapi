@@ -8,15 +8,12 @@ using WebApi.Models;
 
 namespace WebApi.Tools
 {
-    public class DbFactory : IDisposable
+    public class DbInitialiser : IDisposable
     {
         public DbConnection Connection { get; private set; }
         public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
-
-        private readonly ILogger _logger = ApplicationLogging.CreateLogger<DbFactory>();
-
-        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
+        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
         public string ConnectionString => $"{BaseConnectionString};Database={Database}";
 
         private readonly Event TestEvent1 = new Event
@@ -58,13 +55,16 @@ namespace WebApi.Tools
             Longitude = new Random().Next(-180, 180)
         };
 
-        public DbFactory(string database)
+        private readonly ILogger _logger;
+
+        public DbInitialiser(string database, ILogger logger)
         {
             Database = database;
             ProviderFactory = NpgsqlFactory.Instance;
+            _logger = logger;
         }
 
-        public void InitDatabase()
+        public void Init()
         {
             CreateDatabase();
             OpenConnection();

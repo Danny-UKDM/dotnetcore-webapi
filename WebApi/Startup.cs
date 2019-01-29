@@ -4,24 +4,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WebApi.Controllers.Services;
+using WebApi.Services;
 using WebApi.Tools;
 
 namespace WebApi
 {
     public class Startup
     {
-        private DbFactory _dbFactory;
+        private DbInitialiser _dbInitialiser;
 
         public IConfiguration Configuration { get; }
 
         private readonly ILogger<Startup> _logger;
 
-        public Startup(IConfiguration configuration, ILogger<Startup> logger, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
             Configuration = configuration;
             _logger = logger;
-            ApplicationLogging.LoggerFactory = loggerFactory;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -57,15 +56,15 @@ namespace WebApi
         {
             _logger.LogInformation("Starting OnApplicationStarted.");
 
-            _dbFactory = new DbFactory(database: "content");
-            _dbFactory.InitDatabase();
+            _dbInitialiser = new DbInitialiser("content", _logger);
+            _dbInitialiser.Init();
         }
 
         private void OnApplicationStopped()
         {
             _logger.LogInformation("Starting OnApplicationStopped.");
 
-            _dbFactory.Dispose();
+            _dbInitialiser.Dispose();
         }
     }
 }

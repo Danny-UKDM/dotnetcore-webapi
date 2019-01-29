@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using WebApi.Models;
 
-namespace WebApi.Controllers.Services
+namespace WebApi.Services
 {
     public interface IEventRepository
     {

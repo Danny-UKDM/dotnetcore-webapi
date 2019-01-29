@@ -1,8 +1,4 @@
-﻿using FluentAssertions;
-using WebApi.Controllers;
-using Xunit;
-
-namespace WebApi.Tests
+﻿namespace WebApi.Tests.Controllers.EventsController
 {
     public class GivenAGetRequestForAllEvents
     {

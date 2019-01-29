@@ -6,17 +6,17 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using WebApi.Data.Queries;
 using WebApi.Models;
-using WebApi.Tools;
 
-namespace WebApi.Controllers.Services
+namespace WebApi.Services
 {
     public class EventRepository : IEventRepository
     {
+        private readonly ILogger<EventRepository> _logger;
         private readonly ISessionFactory _sessionFactory;
-        private readonly ILogger _logger = ApplicationLogging.CreateLogger<EventRepository>();
 
-        public EventRepository()
+        public EventRepository(ILogger<EventRepository> logger)
         {
+            _logger = logger;
             _sessionFactory = CreateSessionFactory();
         }
 
@@ -47,7 +47,7 @@ namespace WebApi.Controllers.Services
         public ISessionFactory CreateSessionFactory()
         {
             return SessionFactory.With(config =>
-                config.WithConnectionString("Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433;Database=content")
+                config.WithConnectionString("Host=localhost;Username=postgres;Password=password;Pooling=false;Database=content")
                       .WithProviderFactory(NpgsqlFactory.Instance));
         }
     }
