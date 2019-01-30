@@ -33,15 +33,29 @@ namespace WebApi.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error retrieving all events", ex);
+                _logger.LogError($"Error retrieving all events: {ex.Message}");
             }
 
             return events;
         }
 
-        public Task<Event> GetEventByIdAsync(int id)
+        public async Task<Event> GetEventByIdAsync(int eventId)
         {
-            throw new NotImplementedException();
+            Event @event = new Event();
+
+            try
+            {
+                using (var session = _sessionFactory.CreateQuerySession())
+                {
+                    @event = await session.ExecuteAsync(new GetEventByIdQuery(eventId));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error retrieving event {eventId}: {ex.Message}");
+            }
+
+            return @event;
         }
 
         public ISessionFactory CreateSessionFactory()

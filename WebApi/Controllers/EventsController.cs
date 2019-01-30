@@ -24,28 +24,30 @@ namespace WebApi.Controllers
             return new JsonResult(events);
         }
 
-        // GET api/values/5
-        //[HttpGet("{id}")]
-        //public ActionResult<string> Get(int id)
-        //{
-        //    return "value";
-        //}
+        // GET api/events/{eventId}
+        [HttpGet("{eventId}")]
+        public async Task<ActionResult<string>> Get(int eventId)
+        {
+            var @event = await _eventRepository.GetEventByIdAsync(eventId);
 
-        //// POST api/values
+            return new JsonResult(@event);
+        }
+
+        //// POST api/events
         //[HttpPost]
         //public void Post([FromBody] string value)
         //{
         //}
 
-        //// PUT api/values/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
+        //// PUT api/events/{eventId}
+        //[HttpPut("{eventId}")]
+        //public void Put(int eventId, [FromBody] string value)
         //{
         //}
 
-        //// DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
+        //// DELETE api/events/{eventId}
+        //[HttpDelete("{eventId}")]
+        //public void Delete(int eventId)
         //{
         //}
     }
