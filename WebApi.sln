@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28315.86
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csproj", "{C2F73DAB-91F7-4481-B7FE-78CC40990252}"
 EndProject
@@ -10,7 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi.Tests", "WebApi.Tests\WebApi.Tests.csproj", "{8186C927-221A-47C3-A26D-8DB2D61663E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.Tests", "WebApi.Tests\WebApi.Tests.csproj", "{8186C927-221A-47C3-A26D-8DB2D61663E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseInitialiser", "DatabaseInitialiser\DatabaseInitialiser.csproj", "{EF5E5224-4D57-42F9-93A7-374D8F31B555}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseInitialiser.Tests", "DatabaseInitialiser.Tests\DatabaseInitialiser.Tests.csproj", "{6DDE6970-3F32-4471-8387-11A4546C094D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +30,14 @@ Global
 		{8186C927-221A-47C3-A26D-8DB2D61663E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8186C927-221A-47C3-A26D-8DB2D61663E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8186C927-221A-47C3-A26D-8DB2D61663E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF5E5224-4D57-42F9-93A7-374D8F31B555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF5E5224-4D57-42F9-93A7-374D8F31B555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF5E5224-4D57-42F9-93A7-374D8F31B555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF5E5224-4D57-42F9-93A7-374D8F31B555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DDE6970-3F32-4471-8387-11A4546C094D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DDE6970-3F32-4471-8387-11A4546C094D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DDE6970-3F32-4471-8387-11A4546C094D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DDE6970-3F32-4471-8387-11A4546C094D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Data.Common;
-using Badger.Data;
 using Dapper;
-using Microsoft.Extensions.Logging;
 using Npgsql;
-using WebApi.Models;
 
-namespace WebApi.Tools
+namespace DatabaseInitialiser
 {
-    public class DbInitialiser : IDisposable
+    public class Initialiser : IDisposable
     {
         public DbConnection Connection { get; private set; }
         public DbProviderFactory ProviderFactory { get; }
@@ -55,13 +52,10 @@ namespace WebApi.Tools
             Longitude = new Random().Next(-180, 180)
         };
 
-        private readonly ILogger _logger;
-
-        public DbInitialiser(string database, ILogger logger)
+        public Initialiser(string database)
         {
             Database = database;
             ProviderFactory = NpgsqlFactory.Instance;
-            _logger = logger;
         }
 
         public void Init()
@@ -74,24 +68,21 @@ namespace WebApi.Tools
 
         private void CreateDatabase()
         {
-            _logger.LogInformation($"Creating database: {Database}");
             try
             {
                 using (var conn = new NpgsqlConnection(BaseConnectionString))
                 {
                     conn.Execute($"create database {Database}");
                 }
-                _logger.LogInformation($"Successfully created database: {Database}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error creating database: {Database}", ex);
+                Console.WriteLine($"Error creating database: {ex.Message}");
             }
         }
 
         private void OpenConnection()
         {
-            _logger.LogInformation("Opening connection.");
             try
             {
                 Connection = ProviderFactory.CreateConnection();
@@ -100,13 +91,12 @@ namespace WebApi.Tools
             }
             catch (Exception ex)
             {
-                _logger.LogError("Erroring opening connection.", ex);
+                Console.WriteLine($"Erroring opening connection: {ex.Message}");
             }
         }
 
         private void CreateTable()
         {
-            _logger.LogInformation("Creating table.");
             try
             {
                 Connection.Execute(
@@ -127,7 +117,7 @@ namespace WebApi.Tools
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error creating table.", ex);
+                Console.WriteLine($"Error creating table: {ex.Message}");
             }
         }
 
@@ -158,7 +148,6 @@ namespace WebApi.Tools
                         @Longitude
                     )";
 
-            _logger.LogInformation("Inserting test data.");
             try
             {
                 Connection.Execute(insertSql, TestEvent1);
@@ -167,15 +156,8 @@ namespace WebApi.Tools
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error inserting test data", ex);
+                Console.WriteLine($"Error inserting test data: {ex.Message}");
             }
-        }
-
-        public ISessionFactory CreateSessionFactory()
-        {
-            return SessionFactory.With(config =>
-                config.WithConnectionString(ConnectionString)
-                      .WithProviderFactory(ProviderFactory));
         }
 
         public void Dispose()
@@ -186,7 +168,6 @@ namespace WebApi.Tools
 
         private void DestroyDatabase()
         {
-            _logger.LogInformation($"Dropping database: {Database}");
             try
             {
                 using (var conn = new NpgsqlConnection(BaseConnectionString))
@@ -201,7 +182,7 @@ namespace WebApi.Tools
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error dropping database: {ex.Message}");
+                Console.WriteLine($"Error dropping database: {ex.Message}");
             }
         }
     }

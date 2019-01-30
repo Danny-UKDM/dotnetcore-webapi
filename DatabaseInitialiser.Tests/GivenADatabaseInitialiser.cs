@@ -2,31 +2,28 @@
 using System.Data;
 using Badger.Data;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Npgsql;
-using NSubstitute;
 using Xunit;
 
-namespace WebApi.Tests.Tools.DbInitialiser
+namespace DatabaseInitialiser.Tests
 {
-    public class GivenADbInitialiser : IDisposable
+    public class GivenAnInitialiser : IDisposable
     {
-        private readonly WebApi.Tools.DbInitialiser _dbInitialiser;
         private readonly ISessionFactory _sessionFactory;
+        private readonly Initialiser _initialiser;
         private const string Database = "testdatabase";
 
-        public GivenADbInitialiser()
+        public GivenAnInitialiser()
         {
-            var logger = Substitute.For<ILogger>();
-            _dbInitialiser = new WebApi.Tools.DbInitialiser(Database, logger);
-            _dbInitialiser.Init();
+            _initialiser = new Initialiser(Database);
+            _initialiser.Init();
             _sessionFactory = CreateSessionFactory();
         }
 
         [Fact]
         public void ThenTheDbConnectionIsOpen()
         {
-            _dbInitialiser.Connection.State.Should().Be(ConnectionState.Open);
+            _initialiser.Connection.State.Should().Be(ConnectionState.Open);
         }
 
         [Fact]
@@ -57,7 +54,7 @@ namespace WebApi.Tests.Tools.DbInitialiser
 
         public void Dispose()
         {
-            _dbInitialiser.Dispose();
+            _initialiser.Dispose();
         }
     }
 }

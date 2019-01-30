@@ -1,21 +1,21 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using DatabaseInitialiser;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WebApi.Services;
-using WebApi.Tools;
 
 namespace WebApi
 {
     public class Startup
     {
-        private DbInitialiser _dbInitialiser;
 
         public IConfiguration Configuration { get; }
 
         private readonly ILogger<Startup> _logger;
+        private Initialiser _initialiser;
 
         public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
@@ -54,17 +54,17 @@ namespace WebApi
 
         private void OnApplicationStarted()
         {
-            _logger.LogInformation("Starting OnApplicationStarted.");
+            _logger.LogInformation("Creating and seeding database.");
 
-            _dbInitialiser = new DbInitialiser("content", _logger);
-            _dbInitialiser.Init();
+            _initialiser = new Initialiser("content");
+            _initialiser.Init();
         }
 
         private void OnApplicationStopped()
         {
-            _logger.LogInformation("Starting OnApplicationStopped.");
+            _logger.LogInformation("Tearing down database.");
 
-            _dbInitialiser.Dispose();
+            _initialiser.Dispose();
         }
     }
 }
