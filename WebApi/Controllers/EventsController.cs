@@ -1,12 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Models;
 using WebApi.Services;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EventsController : ControllerBase
+    internal class EventsController : ControllerBase
     {
         private readonly IEventRepository _eventRepository;
 
@@ -15,29 +18,47 @@ namespace WebApi.Controllers
             _eventRepository = eventRepository;
         }
 
-        // GET api/events
         [HttpGet]
-        public async Task<ActionResult<string>> Get()
+        [ProducesResponseType(200, Type = typeof(Event))]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Get()
         {
             var events = await _eventRepository.GetAllEventsAsync();
 
-            return new JsonResult(events);
+            if (!events.Any())
+                return NotFound();
+
+            return Ok(events);
         }
 
         // GET api/events/{eventId}
         [HttpGet("{eventId}")]
-        public async Task<ActionResult<string>> Get(int eventId)
+        [ProducesResponseType(200, Type = typeof(Event))]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Get(int eventId)
         {
             var @event = await _eventRepository.GetEventByIdAsync(eventId);
 
-            return new JsonResult(@event);
+            if (@event == null)
+                return NotFound();
+
+            return Ok(@event);
         }
 
-        //// POST api/events
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-        //}
+        // POST api/events
+        [HttpPost]
+        [ProducesResponseType(201, Type = typeof(Event))]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> Post([FromBody] Event @event)
+        {
+            if (!TryValidateModel(@event))
+            {
+                return BadRequest();
+            }
+
+            await _eventRepository.AddEventAsync(@event);
+            return StatusCode((int)HttpStatusCode.Created, @event);
+        }
 
         //// PUT api/events/{eventId}
         //[HttpPut("{eventId}")]

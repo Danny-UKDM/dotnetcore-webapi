@@ -4,7 +4,7 @@ using WebApi.Models;
 
 namespace WebApi.Data.Queries
 {
-    public class GetEventByIdQuery : IQuery<Event>
+    internal class GetEventByIdQuery : IQuery<Event>
     {
         private readonly int _eventId;
 

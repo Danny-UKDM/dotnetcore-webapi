@@ -108,8 +108,8 @@ namespace DatabaseInitialiser
                         eventName varchar(100) not null,
                         addressLine1 varchar(100) not null,
                         postalCode varchar(10) not null,
-                        city varchar(20) not null,
-                        country varchar(20) not null,
+                        city varchar(100) not null,
+                        country varchar(100) not null,
                         latitude float8 not null,
                         longitude float8 not null
                     )"

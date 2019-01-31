@@ -8,5 +8,6 @@ namespace WebApi.Services
     {
         Task<IEnumerable<Event>> GetAllEventsAsync();
         Task<Event> GetEventByIdAsync(int eventId);
+        Task AddEventAsync(Event @event);
     }
 }

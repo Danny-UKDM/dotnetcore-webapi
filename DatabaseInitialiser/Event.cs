@@ -2,7 +2,7 @@
 
 namespace DatabaseInitialiser
 {
-    public class Event
+    internal class Event
     {
         public int EventId { get; set; }
         public Guid PartnerId { get; set; }

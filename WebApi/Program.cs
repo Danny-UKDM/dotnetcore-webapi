@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
+[assembly:InternalsVisibleTo("WebApi.Tests")]
 namespace WebApi
 {
     public class Program

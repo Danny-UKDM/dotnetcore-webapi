@@ -5,7 +5,7 @@ using WebApi.Models;
 
 namespace WebApi.Data.Queries
 {
-    public class GetAllEventsQuery : IQuery<IEnumerable<Event>>
+    internal class GetAllEventsQuery : IQuery<IEnumerable<Event>>
     {
         public IPreparedQuery<IEnumerable<Event>> Prepare(IQueryBuilder builder)
         {
