@@ -12,7 +12,7 @@ namespace DatabaseInitialiser
         public DbConnection Connection { get; private set; }
         public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
-        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
+        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433";
         public string ConnectionString => $"{BaseConnectionString};Database={Database}";
 
         private readonly Event TestEvent1 = new Event

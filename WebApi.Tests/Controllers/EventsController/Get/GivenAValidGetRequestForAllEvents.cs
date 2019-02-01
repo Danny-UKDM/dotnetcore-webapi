@@ -57,9 +57,6 @@ namespace WebApi.Tests.Controllers.EventsController.Get
                   .And.ContainInOrder(_event1, _event2, _event3);
         }
 
-        public Task DisposeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task DisposeAsync() => Task.CompletedTask;
     }
 }

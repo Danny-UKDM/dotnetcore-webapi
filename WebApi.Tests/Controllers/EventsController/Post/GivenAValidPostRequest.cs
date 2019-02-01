@@ -7,12 +7,12 @@ using WebApi.Services;
 using WebApi.Tests.Helpers;
 using Xunit;
 
-namespace WebApi.Tests.Controllers.EventsController.Get
+namespace WebApi.Tests.Controllers.EventsController.Post
 {
-    public class GivenAValidGetRequestForAnEvent : IAsyncLifetime
+    public class GivenAValidPostRequest : IAsyncLifetime
     {
         private Event _event;
-        private IActionResult _actionResult;
+        private ObjectResult _createdResponse;
 
         public async Task InitializeAsync()
         {
@@ -23,23 +23,23 @@ namespace WebApi.Tests.Controllers.EventsController.Get
                                 .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
-            eventRepository.GetEventByIdAsync(_event.EventId).Returns(_event);
+            eventRepository.AddEventAsync(_event).Returns(Task.CompletedTask);
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            _actionResult = await controller.Get(_event.EventId);
+            var actionResult = await controller.Post(_event);
+            _createdResponse = actionResult as ObjectResult;
         }
 
         [Fact]
-        public void ThenTheStatusCodeIs200Ok()
+        public void ThenTheStatusCodeIs201Created()
         {
-            _actionResult.Should().BeOfType<OkObjectResult>();
+            _createdResponse.StatusCode.Should().Be(201);
         }
 
         [Fact]
-        public void ThenAllEventsAreReturned()
+        public void ThenTheEventIsAddedSuccessfully()
         {
-            var okObjectResult = _actionResult as OkObjectResult;
-            var @event = okObjectResult.Value as Event;
+            var @event = _createdResponse.Value as Event;
 
             @event.Should().NotBeNull()
                   .And.BeEquivalentTo(_event);

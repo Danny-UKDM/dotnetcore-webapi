@@ -28,9 +28,6 @@ namespace WebApi.Tests.Controllers.EventsController.Get
             _actionResult.Should().BeOfType<NotFoundResult>();
         }
 
-        public Task DisposeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public Task DisposeAsync() => Task.CompletedTask;
     }
 }

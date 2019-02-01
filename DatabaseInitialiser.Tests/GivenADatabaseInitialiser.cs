@@ -38,7 +38,7 @@ namespace DatabaseInitialiser.Tests
         public ISessionFactory CreateSessionFactory()
         {
             return SessionFactory.With(config =>
-                config.WithConnectionString($"Host=localhost;Username=postgres;Password=password;Pooling=false;Database={Database}")
+                config.WithConnectionString($"Host=localhost;Username=postgres;Password=password;Pooling=false;Port=5433;Database={Database}")
                    .WithProviderFactory(NpgsqlFactory.Instance));
         }
 
