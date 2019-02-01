@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebApi.Models;
 using WebApi.Services;
 
@@ -50,9 +50,9 @@ namespace WebApi.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Event))]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Post([FromBody] Event @event)
+        public async Task<IActionResult> Post([BindRequired, FromBody] Event @event)
         {
-            ModelState.Clear();
+            //ModelState.Clear();
 
             if (!ModelState.IsValid)
             {

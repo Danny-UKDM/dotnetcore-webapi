@@ -70,6 +70,11 @@ namespace WebApi.Services
 
         }
 
+        public Task UpdateEventAsync(Event @event)
+        {
+            throw new NotImplementedException();
+        }
+
         public ISessionFactory CreateSessionFactory()
         {
             return SessionFactory.With(config =>
