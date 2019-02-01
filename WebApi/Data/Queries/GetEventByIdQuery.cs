@@ -6,9 +6,9 @@ namespace WebApi.Data.Queries
 {
     internal class GetEventByIdQuery : IQuery<Event>
     {
-        private readonly int _eventId;
+        private readonly Guid _eventId;
 
-        public GetEventByIdQuery(int eventId)
+        public GetEventByIdQuery(Guid eventId)
         {
             _eventId = eventId;
         }

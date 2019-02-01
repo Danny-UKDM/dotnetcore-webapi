@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ namespace WebApi.Controllers
         [HttpGet("{eventId}")]
         [ProducesResponseType(200, Type = typeof(Event))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Get(int eventId)
+        public async Task<IActionResult> Get(Guid eventId)
         {
             var @event = await _eventRepository.GetEventByIdAsync(eventId);
 

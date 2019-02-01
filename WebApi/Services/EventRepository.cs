@@ -40,7 +40,7 @@ namespace WebApi.Services
             return events;
         }
 
-        public async Task<Event> GetEventByIdAsync(int eventId)
+        public async Task<Event> GetEventByIdAsync(Guid eventId)
         {
             Event @event = new Event();
 
