@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using Dapper;
 using Npgsql;
 
+[assembly:InternalsVisibleTo("DatabaseInitialiser.Tests")]
 namespace DatabaseInitialiser
 {
     public class Initialiser : IDisposable
@@ -15,7 +17,7 @@ namespace DatabaseInitialiser
 
         private readonly Event TestEvent1 = new Event
         {
-            EventId = 1001,
+            EventId = Guid.NewGuid(),
             PartnerId = Guid.NewGuid(),
             EventName = "A Most Excellent Event",
             AddressLine1 = "42 Smashing Avenue",
@@ -28,7 +30,7 @@ namespace DatabaseInitialiser
 
         private readonly Event TestEvent2 = new Event
         {
-            EventId = 2002,
+            EventId = Guid.NewGuid(),
             PartnerId = Guid.NewGuid(),
             EventName = "The One That The Guy From Skins Goes To",
             AddressLine1 = "123 Basic Way",
@@ -41,7 +43,7 @@ namespace DatabaseInitialiser
 
         private readonly Event TestEvent3 = new Event
         {
-            EventId = 3003,
+            EventId = Guid.NewGuid(),
             PartnerId = Guid.NewGuid(),
             EventName = "This One's Alright",
             AddressLine1 = "8008 Hat Street",
@@ -103,7 +105,7 @@ namespace DatabaseInitialiser
                     @"create table events
                     (
                         id bigserial primary key,
-                        eventId int not null,
+                        eventId uuid not null,
                         partnerId uuid not null,
                         eventName varchar(100) not null,
                         addressLine1 varchar(100) not null,

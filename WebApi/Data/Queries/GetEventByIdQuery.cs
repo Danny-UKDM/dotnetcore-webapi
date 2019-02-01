@@ -31,7 +31,7 @@ namespace WebApi.Data.Queries
                .WithParameter("eventId", _eventId)
                .WithSingleMapper(r => new Event
                    {
-                       EventId = r.Get<int>("eventId"),
+                       EventId = r.Get<Guid>("eventId"),
                        PartnerId = r.Get<Guid>("partnerId"),
                        EventName = r.Get<string>("eventName"),
                        AddressLine1 = r.Get<string>("addressLine1"),

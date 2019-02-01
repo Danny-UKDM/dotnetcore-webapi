@@ -4,7 +4,7 @@ namespace DatabaseInitialiser
 {
     internal class Event
     {
-        public int EventId { get; set; }
+        public Guid EventId { get; set; }
         public Guid PartnerId { get; set; }
         public string EventName { get; set; }
         public string AddressLine1 { get; set; }

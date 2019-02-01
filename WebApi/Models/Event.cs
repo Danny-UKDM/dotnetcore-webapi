@@ -6,7 +6,7 @@ namespace WebApi.Models
     public class Event
     {
         [Required]
-        public int EventId { get; set; }
+        public Guid EventId { get; set; }
         [Required]
         public Guid PartnerId { get; set; }
         [Required]
