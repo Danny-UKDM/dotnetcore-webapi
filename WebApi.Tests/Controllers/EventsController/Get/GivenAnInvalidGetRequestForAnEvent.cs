@@ -19,7 +19,7 @@ namespace WebApi.Tests.Controllers.EventsController.Get
             eventRepository.GetEventByIdAsync(Arg.Any<Guid>()).Returns(new Event());
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            _actionResult = await controller.Get();
+            _actionResult = await controller.GetAllEvents();
         }
 
         [Fact]

@@ -26,7 +26,7 @@ namespace WebApi.Tests.Controllers.EventsController.Get
             eventRepository.GetEventByIdAsync(_event.EventId).Returns(_event);
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            _actionResult = await controller.Get(_event.EventId);
+            _actionResult = await controller.GetEventById(_event.EventId);
         }
 
         [Fact]

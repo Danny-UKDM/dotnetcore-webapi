@@ -12,7 +12,7 @@ namespace WebApi.Tests.Controllers.EventsController.Post
     public class GivenAValidPostRequest : IAsyncLifetime
     {
         private Event _event;
-        private ObjectResult _createdResponse;
+        private IActionResult _actionResult;
 
         public async Task InitializeAsync()
         {
@@ -26,20 +26,20 @@ namespace WebApi.Tests.Controllers.EventsController.Post
             eventRepository.AddEventAsync(_event).Returns(Task.CompletedTask);
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            var actionResult = await controller.Post(_event);
-            _createdResponse = actionResult as ObjectResult;
+            _actionResult = await controller.Post(_event);
         }
 
         [Fact]
         public void ThenTheStatusCodeIs201Created()
         {
-            _createdResponse.StatusCode.Should().Be(201);
+            _actionResult.Should().BeOfType<CreatedAtActionResult>();
         }
 
         [Fact]
         public void ThenTheEventIsAddedSuccessfully()
         {
-            var @event = _createdResponse.Value as Event;
+            var createdResponse = _actionResult as CreatedAtActionResult;
+            var @event = createdResponse.Value as Event;
 
             @event.Should().NotBeNull()
                   .And.BeEquivalentTo(_event);

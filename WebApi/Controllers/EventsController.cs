@@ -22,7 +22,7 @@ namespace WebApi.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(Event))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAllEvents()
         {
             var events = await _eventRepository.GetAllEventsAsync();
 
@@ -36,7 +36,7 @@ namespace WebApi.Controllers
         [HttpGet("{eventId}")]
         [ProducesResponseType(200, Type = typeof(Event))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Get(Guid eventId)
+        public async Task<IActionResult> GetEventById(Guid eventId)
         {
             var @event = await _eventRepository.GetEventByIdAsync(eventId);
 
@@ -60,7 +60,7 @@ namespace WebApi.Controllers
             }
 
             await _eventRepository.AddEventAsync(@event);
-            return StatusCode((int)HttpStatusCode.Created, @event);
+            return CreatedAtAction(nameof(GetEventById), new { eventId = @event.EventId }, @event);
         }
 
         //// PUT api/events/{eventId}
