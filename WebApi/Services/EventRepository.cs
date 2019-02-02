@@ -61,18 +61,53 @@ namespace WebApi.Services
 
         public async Task AddEventAsync(Event @event)
         {
-            using (var session = _sessionFactory.CreateCommandSession())
+            try
             {
-                await session.ExecuteAsync(new InsertEventCommand(@event));
+                using (var session = _sessionFactory.CreateCommandSession())
+                {
+                    await session.ExecuteAsync(new InsertEventCommand(@event));
 
-                session.Commit();
+                    session.Commit();
+                }
             }
-
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error adding event {@event.EventId}: {ex.Message}");
+            }
         }
 
-        public Task UpdateEventAsync(Event @event)
+        public async Task UpdateEventAsync(Event @event)
         {
-            throw new NotImplementedException();
+            try
+            {
+                using (var session = _sessionFactory.CreateCommandSession())
+                {
+                    await session.ExecuteAsync(new UpdateEventCommand(@event));
+
+                    session.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating event {@event.EventId}: {ex.Message}");
+            }
+        }
+
+        public async Task DeleteEventAsync(Guid eventId)
+        {
+            try
+            {
+                using (var session = _sessionFactory.CreateCommandSession())
+                {
+                    await session.ExecuteAsync(new DeleteEventCommand(eventId));
+
+                    session.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error deleting event {eventId}: {ex.Message}");
+            }
         }
 
         public ISessionFactory CreateSessionFactory()

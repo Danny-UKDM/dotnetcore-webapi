@@ -19,8 +19,8 @@ namespace WebApi.Tests.Controllers.EventsController.Get
             var builder = new EventBuilder();
 
             _event = builder.CreateEvent("Cool Event")
-                                .InCity("Cool City")
-                                .Build();
+                            .InCity("Cool City")
+                            .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.GetEventByIdAsync(_event.EventId).Returns(_event);

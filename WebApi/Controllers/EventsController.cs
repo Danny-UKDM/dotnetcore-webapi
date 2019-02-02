@@ -19,9 +19,8 @@ namespace WebApi.Controllers
             _eventRepository = eventRepository;
         }
 
+        //-- GET api/events
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(Event))]
-        [ProducesResponseType(404)]
         public async Task<IActionResult> GetAllEvents()
         {
             var events = await _eventRepository.GetAllEventsAsync();
@@ -32,10 +31,8 @@ namespace WebApi.Controllers
             return Ok(events);
         }
 
-        // GET api/events/{eventId}
+        //-- GET api/events/{eventId}
         [HttpGet("{eventId}")]
-        [ProducesResponseType(200, Type = typeof(Event))]
-        [ProducesResponseType(404)]
         public async Task<IActionResult> GetEventById(Guid eventId)
         {
             var @event = await _eventRepository.GetEventByIdAsync(eventId);
@@ -46,31 +43,44 @@ namespace WebApi.Controllers
             return Ok(@event);
         }
 
-        // POST api/events
+        //-- POST api/events
         [HttpPost]
-        [ProducesResponseType(201, Type = typeof(Event))]
-        [ProducesResponseType(400)]
-        public async Task<IActionResult> Post([BindRequired, FromBody] Event @event)
+        public async Task<IActionResult> Post([BindRequired, FromBody]Event @event)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest();
-            }
 
             await _eventRepository.AddEventAsync(@event);
             return CreatedAtAction(nameof(GetEventById), new { eventId = @event.EventId }, @event);
         }
 
-        //// PUT api/events/{eventId}
-        //[HttpPut("{eventId}")]
-        //public void Put(int eventId, [FromBody] string value)
-        //{
-        //}
+        //-- PUT api/events/{eventId}
+        [HttpPut("{eventId}")]
+        public async Task<IActionResult> Put(Guid eventId, [BindRequired, FromBody]Event @event)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
 
-        //// DELETE api/events/{eventId}
-        //[HttpDelete("{eventId}")]
-        //public void Delete(int eventId)
-        //{
-        //}
+            var existingEvent = await _eventRepository.GetEventByIdAsync(eventId);
+
+            if (existingEvent == null)
+                return NotFound();
+
+            await _eventRepository.UpdateEventAsync(@event);
+            return NoContent();
+        }
+
+        //-- DELETE api/events/{eventId}
+        [HttpDelete("{eventId}")]
+        public async Task<IActionResult> Delete(Guid eventId)
+        {
+            var existingEvent = await _eventRepository.GetEventByIdAsync(eventId);
+
+            if (existingEvent == null)
+                return NotFound();
+
+            await _eventRepository.DeleteEventAsync(eventId);
+            return NoContent();
+        }
     }
 }

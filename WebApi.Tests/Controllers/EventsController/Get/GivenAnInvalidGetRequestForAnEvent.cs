@@ -16,10 +16,10 @@ namespace WebApi.Tests.Controllers.EventsController.Get
         public async Task InitializeAsync()
         {
             var eventRepository = Substitute.For<IEventRepository>();
-            eventRepository.GetEventByIdAsync(Arg.Any<Guid>()).Returns(new Event());
+            eventRepository.GetEventByIdAsync(Arg.Any<Guid>()).Returns((Event)null);
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            _actionResult = await controller.GetAllEvents();
+            _actionResult = await controller.GetEventById(Guid.NewGuid());
         }
 
         [Fact]

@@ -22,16 +22,16 @@ namespace WebApi.Tests.Controllers.EventsController.Get
             var builder = new EventBuilder();
 
             _event1 = builder.CreateEvent("Cool Event")
-                                .InCity("Cool City")
-                                .Build();
+                             .InCity("Cool City")
+                             .Build();
 
             _event2 = builder.CreateEvent("Cooler Event")
-                                .InCity("Cooler City")
-                                .Build();
+                             .InCity("Cooler City")
+                             .Build();
 
             _event3 = builder.CreateEvent("Coolest Event")
-                                .InCity("Coolest City")
-                                .Build();
+                             .InCity("Coolest City")
+                             .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.GetAllEventsAsync().Returns(new List<Event> { _event1, _event2, _event3 });

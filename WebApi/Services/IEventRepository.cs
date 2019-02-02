@@ -11,5 +11,6 @@ namespace WebApi.Services
         Task<Event> GetEventByIdAsync(Guid eventId);
         Task AddEventAsync(Event @event);
         Task UpdateEventAsync(Event @event);
+        Task DeleteEventAsync(Guid eventId);
     }
 }
