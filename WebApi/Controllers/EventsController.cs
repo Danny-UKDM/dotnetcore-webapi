@@ -52,8 +52,6 @@ namespace WebApi.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Post([BindRequired, FromBody] Event @event)
         {
-            //ModelState.Clear();
-
             if (!ModelState.IsValid)
             {
                 return BadRequest();

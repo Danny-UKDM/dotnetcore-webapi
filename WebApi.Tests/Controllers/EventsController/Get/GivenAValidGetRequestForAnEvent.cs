@@ -36,7 +36,7 @@ namespace WebApi.Tests.Controllers.EventsController.Get
         }
 
         [Fact]
-        public void ThenAllEventsAreReturned()
+        public void ThenTheEventIsReturned()
         {
             var okObjectResult = _actionResult as OkObjectResult;
             var @event = okObjectResult.Value as Event;
