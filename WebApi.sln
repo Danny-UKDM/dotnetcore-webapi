@@ -12,9 +12,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.Tests", "WebApi.Tests\WebApi.Tests.csproj", "{8186C927-221A-47C3-A26D-8DB2D61663E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseInitialiser", "DatabaseInitialiser\DatabaseInitialiser.csproj", "{EF5E5224-4D57-42F9-93A7-374D8F31B555}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseInitialiser", "DatabaseInitialiser\DatabaseInitialiser.csproj", "{EF5E5224-4D57-42F9-93A7-374D8F31B555}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseInitialiser.Tests", "DatabaseInitialiser.Tests\DatabaseInitialiser.Tests.csproj", "{6DDE6970-3F32-4471-8387-11A4546C094D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseInitialiser.Tests", "DatabaseInitialiser.Tests\DatabaseInitialiser.Tests.csproj", "{6DDE6970-3F32-4471-8387-11A4546C094D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi.IntegrationTests", "WebApi.IntegrationTests\WebApi.IntegrationTests.csproj", "{687A8421-F2D0-42C4-A909-9B9BA1A49629}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{6DDE6970-3F32-4471-8387-11A4546C094D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DDE6970-3F32-4471-8387-11A4546C094D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DDE6970-3F32-4471-8387-11A4546C094D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
