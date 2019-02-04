@@ -10,7 +10,7 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    internal class EventsController : ControllerBase
+    public class EventsController : ControllerBase
     {
         private readonly IEventRepository _eventRepository;
 
