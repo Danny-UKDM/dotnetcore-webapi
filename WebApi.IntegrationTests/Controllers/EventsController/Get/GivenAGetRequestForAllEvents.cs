@@ -1,7 +1,9 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using WebApi.Models;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Get
@@ -36,9 +38,11 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         }
 
         [Fact]
-        public void ThenTheContentLengthIsNotZero()
+        public async Task ThenAllTestEventsAreReturned()
         {
-            _response.Content.Headers.ContentLength.Should().BeGreaterThan(0);
+            var @events = await _response.Content.ReadAsAsync<ICollection<Event>>();
+
+            events.Count.Should().Be(3);
         }
 
         public Task DisposeAsync()
