@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Common;
 using Dapper;
 using Npgsql;
 
@@ -7,8 +6,6 @@ namespace DatabaseInitialiser
 {
     public class Initialiser : IDisposable
     {
-        public DbConnection Connection { get; private set; }
-        public DbProviderFactory ProviderFactory { get; }
         private string Database { get; }
         private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
         public string ConnectionString => $"{BaseConnectionString};Database={Database}";
@@ -16,13 +13,11 @@ namespace DatabaseInitialiser
         public Initialiser(string database)
         {
             Database = database;
-            ProviderFactory = NpgsqlFactory.Instance;
         }
 
         public void Init()
         {
             CreateDatabase();
-            OpenConnection();
             CreateTable();
         }
 
@@ -41,26 +36,13 @@ namespace DatabaseInitialiser
             }
         }
 
-        private void OpenConnection()
-        {
-            try
-            {
-                Connection = ProviderFactory.CreateConnection();
-                Connection.ConnectionString = ConnectionString;
-                Connection.Open();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erroring opening connection: {ex.Message}");
-            }
-        }
-
         private void CreateTable()
         {
             try
             {
-                Connection.Execute(
-                    @"create table events
+                using (var conn = new NpgsqlConnection(ConnectionString))
+                {
+                    conn.Execute(@"create table events
                     (
                         id bigserial primary key,
                         eventId uuid not null,
@@ -72,8 +54,8 @@ namespace DatabaseInitialiser
                         country varchar(100) not null,
                         latitude float8 not null,
                         longitude float8 not null
-                    )"
-                );
+                    )");
+                }
             }
             catch (Exception ex)
             {
@@ -84,7 +66,6 @@ namespace DatabaseInitialiser
         public void Dispose()
         {
             DestroyDatabase();
-            Connection.Close();
         }
 
         private void DestroyDatabase()
