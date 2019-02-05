@@ -1,0 +1,21 @@
+version: '1.0.{build}'
+image: Visual Studio 2017
+branches:
+  only:
+  - master
+init:
+  - cmd: git config --global core.autocrlf true
+before_build:
+  - cmd: dotnet --version
+  - cmd: dotnet restore ./WebApi/WebApi.csproj --verbosity m
+build_script:
+  - cmd: dotnet publish ./WebApi/WebApi.csproj
+artifacts:
+ - path: '\WebApi\bin\Debug\netcoreapp2.2\publish'
+   name: WebApi
+clone_depth: 1
+test_script:
+  - cmd: dotnet restore ./WebApi.Tests/WebApi.Tests.csproj --verbosity m
+  - cmd: cd WebApi.Tests
+  - cmd: dotnet xunit
+deploy: off
