@@ -39,6 +39,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+Huge hat tip to [Matt](https://github.com/mholland) and [Tim](https://github.com/timbarker) for making my life super easy with [Badger.Data](https://github.com/timbarker/Badger.Data), and for providing clean open-sourced code which inspired me to write some of my own.
