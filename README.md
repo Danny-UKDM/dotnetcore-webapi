@@ -23,7 +23,7 @@ In a terminal window in the root of the solution;
 
 * Run the Web API project locally by using the `dotnet run --project WebApi/WebApi.csproj` command.
 
-Running the Web API project locally will create a local test PostgreSQL database, create a test table and seed it with test data; before making the HTTP endpoints available.
+Running the Web API project locally will create a local test PostgreSQL database and table; before making the HTTP endpoints available.
 
 On application close (`ctrl` + `c` from the terminal window), the test database will be dropped and the connection disposed of.
 
