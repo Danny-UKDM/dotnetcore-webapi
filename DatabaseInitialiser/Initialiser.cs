@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Data.Common;
-using System.Runtime.CompilerServices;
 using Dapper;
 using Npgsql;
 
-[assembly:InternalsVisibleTo("DatabaseInitialiser.Tests")]
 namespace DatabaseInitialiser
 {
     public class Initialiser : IDisposable
@@ -14,45 +12,6 @@ namespace DatabaseInitialiser
         private string Database { get; }
         private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
         public string ConnectionString => $"{BaseConnectionString};Database={Database}";
-
-        private readonly Event TestEvent1 = new Event
-        {
-            EventId = Guid.NewGuid(),
-            PartnerId = Guid.NewGuid(),
-            EventName = "A Most Excellent Event",
-            AddressLine1 = "42 Smashing Avenue",
-            PostalCode = "L0L H41",
-            City = "Fabulousville",
-            Country = "United Kingdom",
-            Latitude = new Random().Next(-90, 90),
-            Longitude = new Random().Next(-180, 180)
-        };
-
-        private readonly Event TestEvent2 = new Event
-        {
-            EventId = Guid.NewGuid(),
-            PartnerId = Guid.NewGuid(),
-            EventName = "The One That The Guy From Skins Goes To",
-            AddressLine1 = "123 Basic Way",
-            PostalCode = "NOP3 T44",
-            City = "Whocares",
-            Country = "Pooperama",
-            Latitude = new Random().Next(-90, 90),
-            Longitude = new Random().Next(-180, 180)
-        };
-
-        private readonly Event TestEvent3 = new Event
-        {
-            EventId = Guid.NewGuid(),
-            PartnerId = Guid.NewGuid(),
-            EventName = "This One's Alright",
-            AddressLine1 = "8008 Hat Street",
-            PostalCode = "432478",
-            City = "Okayshire",
-            Country = "Commonwealth of Sure",
-            Latitude = new Random().Next(-90, 90),
-            Longitude = new Random().Next(-180, 180)
-        };
 
         public Initialiser(string database)
         {
@@ -65,7 +24,6 @@ namespace DatabaseInitialiser
             CreateDatabase();
             OpenConnection();
             CreateTable();
-            InsertTestData();
         }
 
         private void CreateDatabase()
@@ -120,45 +78,6 @@ namespace DatabaseInitialiser
             catch (Exception ex)
             {
                 Console.WriteLine($"Error creating table: {ex.Message}");
-            }
-        }
-
-        private void InsertTestData()
-        {
-            const string insertSql = @"
-                    insert into events (
-                        eventId,
-                        partnerId,
-                        eventName,
-                        addressLine1,
-                        postalCode,
-                        city,
-                        country,
-                        latitude,
-                        longitude
-                        )
-                        values
-                        (
-                        @EventId,
-                        @PartnerId,
-                        @EventName,
-                        @AddressLine1,
-                        @PostalCode,
-                        @City,
-                        @Country,
-                        @Latitude,
-                        @Longitude
-                    )";
-
-            try
-            {
-                Connection.Execute(insertSql, TestEvent1);
-                Connection.Execute(insertSql, TestEvent2);
-                Connection.Execute(insertSql, TestEvent3);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error inserting test data: {ex.Message}");
             }
         }
 

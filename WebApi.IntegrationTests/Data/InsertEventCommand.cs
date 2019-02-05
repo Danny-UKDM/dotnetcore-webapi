@@ -1,9 +1,9 @@
 ﻿using Badger.Data;
 using WebApi.Models;
 
-namespace WebApi.Data.Commands
+namespace WebApi.IntegrationTests.Data
 {
-    internal class InsertEventCommand : ICommand
+    public class InsertEventCommand : ICommand
     {
         private readonly Event _event;
 
@@ -14,7 +14,7 @@ namespace WebApi.Data.Commands
         public IPreparedCommand Prepare(ICommandBuilder builder)
         {
             return builder
-               .WithSql(@"insert into events (
+                  .WithSql(@"insert into events (
                     eventId,
                     partnerId,
                     eventName,
@@ -34,16 +34,16 @@ namespace WebApi.Data.Commands
                     @country,
                     @latitude,
                     @longitude )")
-               .WithParameter("eventId", _event.EventId)
-               .WithParameter("partnerId", _event.PartnerId)
-               .WithParameter("eventName", _event.EventName)
-               .WithParameter("addressLine1", _event.AddressLine1)
-               .WithParameter("postalCode", _event.PostalCode)
-               .WithParameter("city", _event.City)
-               .WithParameter("country", _event.Country)
-               .WithParameter("latitude", _event.Latitude)
-               .WithParameter("longitude", _event.Longitude)
-               .Build();
+                  .WithParameter("eventId", _event.EventId)
+                  .WithParameter("partnerId", _event.PartnerId)
+                  .WithParameter("eventName", _event.EventName)
+                  .WithParameter("addressLine1", _event.AddressLine1)
+                  .WithParameter("postalCode", _event.PostalCode)
+                  .WithParameter("city", _event.City)
+                  .WithParameter("country", _event.Country)
+                  .WithParameter("latitude", _event.Latitude)
+                  .WithParameter("longitude", _event.Longitude)
+                  .Build();
         }
     }
 }

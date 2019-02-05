@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DatabaseInitialiser
+namespace DatabaseInitialiser.Tests
 {
-    internal class Event
+    public class Event
     {
         public Guid EventId { get; set; }
         public Guid PartnerId { get; set; }

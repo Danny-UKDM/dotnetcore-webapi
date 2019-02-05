@@ -1,54 +1,68 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Npgsql;
+using WebApi.IntegrationTests.Data;
+using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 {
-    public class GivenAGetRequestForAllEvents : IClassFixture<WebApplicationFactory<Startup>>, IAsyncLifetime
+    public class GivenAGetRequestForAllEvents : IClassFixture<WebApplicationFactory<Startup>>, IDisposable
     {
-        private readonly WebApplicationFactory<Startup> _factory;
-        private HttpResponseMessage _response;
-        private HttpClient _client;
+        private readonly HttpClient _client;
 
         public GivenAGetRequestForAllEvents(WebApplicationFactory<Startup> factory)
         {
-            _factory = factory;
-        }
-
-        public async Task InitializeAsync()
-        {
-            _client = _factory.CreateClient();
-            _response = await _client.GetAsync("/api/events");
+            _client = factory.CreateClient();
         }
 
         [Fact]
-        public void ThenASuccessStatusCodeIsReturned()
+        public async Task ThenTheRequestSuccessfullyReturnsAllEvents()
         {
-            _response.IsSuccessStatusCode.Should().BeTrue();
-        }
+            await InsertTestEvents();
 
-        [Fact]
-        public void ThenAJsonContentTypeIsReturned()
-        {
-            _response.Content.Headers.ContentType.ToString().Should().Be("application/json; charset=utf-8");
-        }
+            var response = await _client.GetAsync("/api/events");
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.Content.Headers.ContentType.ToString().Should().Be("application/json; charset=utf-8");
 
-        [Fact]
-        public async Task ThenAllTestEventsAreReturned()
-        {
-            var @events = await _response.Content.ReadAsAsync<ICollection<Event>>();
-
+            var events = await response.Content.ReadAsAsync<ICollection<Event>>();
             events.Count.Should().Be(3);
         }
 
-        public Task DisposeAsync()
+        public ISessionFactory CreateSessionFactory()
+        {
+            return SessionFactory.With(config =>
+                config.WithConnectionString($"Host=localhost;Username=postgres;Password=password;Pooling=false;Database=content")
+                      .WithProviderFactory(NpgsqlFactory.Instance));
+        }
+
+        private async Task InsertTestEvents()
+        {
+            var event1 = new EventBuilder().CreateEvent("Cool Event").Build();
+            var event2 = new EventBuilder().CreateEvent("Cooler Event").Build();
+            var event3 = new EventBuilder().CreateEvent("Coolest Event").Build();
+
+            var sessionFactory = CreateSessionFactory();
+
+            using (var session = sessionFactory.CreateCommandSession())
+            {
+                await session.ExecuteAsync(new InsertEventCommand(event1));
+                await session.ExecuteAsync(new InsertEventCommand(event2));
+                await session.ExecuteAsync(new InsertEventCommand(event3));
+
+                session.Commit();
+            }
+        }
+
+        public void Dispose()
         {
             _client.Dispose();
-            return Task.CompletedTask;
         }
     }
 }
