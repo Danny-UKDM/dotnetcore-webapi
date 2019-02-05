@@ -14,11 +14,9 @@ namespace WebApi.Tests.Controllers.EventsController.Put
 
         public async Task InitializeAsync()
         {
-            var builder = new EventBuilder();
-
-            var @event = builder.CreateEvent("Updated Cool Event")
-                                .InCity("New Cool City")
-                                .Build();
+            var @event = new EventBuilder().CreateEvent("Updated Cool Event")
+                                           .InCity("New Cool City")
+                                           .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.UpdateEventAsync(@event).Returns(Task.CompletedTask);

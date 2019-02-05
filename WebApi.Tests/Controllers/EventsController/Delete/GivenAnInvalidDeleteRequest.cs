@@ -15,11 +15,10 @@ namespace WebApi.Tests.Controllers.EventsController.Delete
 
         public async Task InitializeAsync()
         {
-            var builder = new EventBuilder();
 
-            var @event = builder.CreateEvent("Unknown Event")
-                                .InCity("Alien City")
-                                .Build();
+            var @event = new EventBuilder().CreateEvent("Unknown Event")
+                                           .InCity("Alien City")
+                                           .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.GetEventByIdAsync(@event.EventId).Returns((Event)null);

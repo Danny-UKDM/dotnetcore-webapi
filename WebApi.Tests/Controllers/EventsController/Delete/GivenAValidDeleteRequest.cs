@@ -14,11 +14,9 @@ namespace WebApi.Tests.Controllers.EventsController.Delete
 
         public async Task InitializeAsync()
         {
-            var builder = new EventBuilder();
-
-            var @event = builder.CreateEvent("Cool Event")
-                                .InCity("Cool City")
-                                .Build();
+            var @event = new EventBuilder().CreateEvent("Cool Event")
+                                           .InCity("Cool City")
+                                           .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.DeleteEventAsync(@event.EventId).Returns(Task.CompletedTask);

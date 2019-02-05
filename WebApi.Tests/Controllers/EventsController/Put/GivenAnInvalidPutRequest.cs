@@ -11,13 +11,12 @@ namespace WebApi.Tests.Controllers.EventsController.Put
 {
     public class GivenAnInvalidPutRequest
     {
-        private Event _event;
-        private WebApi.Controllers.EventsController _controller;
+        private readonly Event _event;
+        private readonly WebApi.Controllers.EventsController _controller;
 
         public GivenAnInvalidPutRequest()
         {
-            var builder = new EventBuilder();
-            _event = builder.CreateEvent("Uncool Event").Build();
+            _event = new EventBuilder().CreateEvent("Uncool Event").Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
             eventRepository.GetEventByIdAsync(_event.EventId).Returns((Event)null);
