@@ -1,5 +1,7 @@
 # .Net Core Web Api
 
+[![Build status](https://ci.appveyor.com/api/projects/status/rlou2yhasuj4h1tl/branch/master?svg=true)](https://ci.appveyor.com/project/Danny-UKDM/dotnetcore-webapi/branch/master)
+
 Just playing with a .Net Core 2.2 Web Api
 
 ## Getting Started
