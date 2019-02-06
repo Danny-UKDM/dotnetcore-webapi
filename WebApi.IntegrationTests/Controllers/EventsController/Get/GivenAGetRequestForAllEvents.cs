@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Npgsql;
 using WebApi.IntegrationTests.Data;
 using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
@@ -35,21 +33,13 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
             events.Count.Should().Be(3);
         }
 
-        public ISessionFactory CreateSessionFactory()
-        {
-            return SessionFactory.With(config =>
-                config.WithConnectionString($"Host=localhost;Username=postgres;Password=password;Pooling=false;Database=content")
-                      .WithProviderFactory(NpgsqlFactory.Instance));
-        }
-
-        private async Task InsertTestEvents()
+        private static async Task InsertTestEvents()
         {
             var event1 = new EventBuilder().CreateEvent("Cool Event").Build();
             var event2 = new EventBuilder().CreateEvent("Cooler Event").Build();
             var event3 = new EventBuilder().CreateEvent("Coolest Event").Build();
 
-            var sessionFactory = CreateSessionFactory();
-
+            var sessionFactory = DataUtils.CreateSessionFactory();
             using (var session = sessionFactory.CreateCommandSession())
             {
                 await session.ExecuteAsync(new InsertEventCommand(event1));
@@ -63,6 +53,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         public void Dispose()
         {
             _client.Dispose();
+            DataUtils.PurgeTestData();
         }
     }
 }
