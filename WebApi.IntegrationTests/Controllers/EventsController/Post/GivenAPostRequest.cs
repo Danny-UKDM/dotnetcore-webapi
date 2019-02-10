@@ -42,7 +42,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
 
             using (var session = _sessionFactory.CreateQuerySession())
             {
-                session.Execute(new CountRowsByEventIdsQuery(new[] {_event.EventId})).Should().Be(1);
+                session.Execute(new CountRowsByEventIdQuery(new[] {_event.EventId})).Should().Be(1);
             }
         }
 

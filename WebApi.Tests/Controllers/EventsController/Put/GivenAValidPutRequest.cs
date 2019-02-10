@@ -14,16 +14,19 @@ namespace WebApi.Tests.Controllers.EventsController.Put
 
         public async Task InitializeAsync()
         {
-            var @event = new EventBuilder().CreateEvent("Updated Cool Event")
+            var existingEvent = new EventBuilder().CreateEvent("OG Cool Event")
+                                                  .InCity("OG Cool City")
+                                                  .Build();
+            var newEvent = new EventBuilder().CreateEvent("Updated Cool Event")
                                            .InCity("New Cool City")
                                            .Build();
 
             var eventRepository = Substitute.For<IEventRepository>();
-            eventRepository.UpdateEventAsync(@event).Returns(Task.CompletedTask);
-            eventRepository.GetEventByIdAsync(@event.EventId).Returns(@event);
+            eventRepository.UpdateEventAsync(newEvent, existingEvent.EventId).Returns(Task.CompletedTask);
+            eventRepository.GetEventByIdAsync(existingEvent.EventId).Returns(existingEvent);
 
             var controller = new WebApi.Controllers.EventsController(eventRepository);
-            _actionResult = await controller.Put(@event.EventId, @event);
+            _actionResult = await controller.Put(existingEvent.EventId, newEvent);
         }
 
         [Fact]

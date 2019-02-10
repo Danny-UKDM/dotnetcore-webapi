@@ -10,7 +10,7 @@ namespace WebApi.Services
         Task<IEnumerable<Event>> GetAllEventsAsync();
         Task<Event> GetEventByIdAsync(Guid eventId);
         Task AddEventAsync(Event @event);
-        Task UpdateEventAsync(Event @event);
+        Task UpdateEventAsync(Event newEvent, Guid existingEventId);
         Task DeleteEventAsync(Guid eventId);
     }
 }

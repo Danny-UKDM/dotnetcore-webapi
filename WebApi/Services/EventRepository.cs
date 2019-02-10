@@ -76,20 +76,20 @@ namespace WebApi.Services
             }
         }
 
-        public async Task UpdateEventAsync(Event @event)
+        public async Task UpdateEventAsync(Event newEvent, Guid existingEventId)
         {
             try
             {
                 using (var session = _sessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new UpdateEventCommand(@event));
+                    await session.ExecuteAsync(new UpdateEventCommand(newEvent, existingEventId));
 
                     session.Commit();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error updating event {@event.EventId}: {ex.Message}");
+                _logger.LogError($"Error updating event {existingEventId}: {ex.Message}");
             }
         }
 

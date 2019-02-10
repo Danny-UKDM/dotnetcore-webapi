@@ -66,7 +66,7 @@ namespace WebApi.Controllers
             if (existingEvent == null)
                 return NotFound();
 
-            await _eventRepository.UpdateEventAsync(@event);
+            await _eventRepository.UpdateEventAsync(@event, eventId);
             return NoContent();
         }
 

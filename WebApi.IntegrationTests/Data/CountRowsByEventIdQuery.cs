@@ -3,11 +3,11 @@ using Badger.Data;
 
 namespace WebApi.IntegrationTests.Data
 {
-    public class CountRowsByEventIdsQuery : IQuery<long>
+    public class CountRowsByEventIdQuery : IQuery<long>
     {
         private readonly Guid[] _eventIds;
 
-        public CountRowsByEventIdsQuery(Guid[] eventIds)
+        public CountRowsByEventIdQuery(Guid[] eventIds)
         {
             _eventIds = eventIds;
         }

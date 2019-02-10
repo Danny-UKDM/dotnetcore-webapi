@@ -1,20 +1,24 @@
-﻿using Badger.Data;
+﻿using System;
+using Badger.Data;
 using WebApi.Models;
 
 namespace WebApi.Data.Commands
 {
     internal class UpdateEventCommand : ICommand
     {
-        private readonly Event _event;
+        private readonly Event _newEvent;
+        private readonly Guid _existingEventId;
 
-        public UpdateEventCommand(Event @event)
+        public UpdateEventCommand(Event newNewEvent, Guid existingEventId)
         {
-            _event = @event;
+            _newEvent = newNewEvent;
+            _existingEventId = existingEventId;
         }
         public IPreparedCommand Prepare(ICommandBuilder builder)
         {
             return builder
                .WithSql(@"update events set
+                    eventId = @eventId,
                     partnerId = @partnerId,
                     eventName = @eventName,
                     addressLine1 = @addressLine1,
@@ -23,16 +27,17 @@ namespace WebApi.Data.Commands
                     country = @country,
                     latitude = @latitude,
                     longitude = @longitude
-                    where eventId = @eventId")
-               .WithParameter("eventId", _event.EventId)
-               .WithParameter("partnerId", _event.PartnerId)
-               .WithParameter("eventName", _event.EventName)
-               .WithParameter("addressLine1", _event.AddressLine1)
-               .WithParameter("postalCode", _event.PostalCode)
-               .WithParameter("city", _event.City)
-               .WithParameter("country", _event.Country)
-               .WithParameter("latitude", _event.Latitude)
-               .WithParameter("longitude", _event.Longitude)
+                    where eventId = @existingEventId")
+               .WithParameter("existingEventId", _existingEventId)
+               .WithParameter("eventId", _newEvent.EventId)
+               .WithParameter("partnerId", _newEvent.PartnerId)
+               .WithParameter("eventName", _newEvent.EventName)
+               .WithParameter("addressLine1", _newEvent.AddressLine1)
+               .WithParameter("postalCode", _newEvent.PostalCode)
+               .WithParameter("city", _newEvent.City)
+               .WithParameter("country", _newEvent.Country)
+               .WithParameter("latitude", _newEvent.Latitude)
+               .WithParameter("longitude", _newEvent.Longitude)
                .Build();
         }
     }
