@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,8 @@ namespace WebApi.Controllers
 
         //-- GET api/events
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Event>))]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> GetAllEvents()
         {
             var events = await _eventRepository.GetAllEventsAsync();
@@ -33,6 +36,8 @@ namespace WebApi.Controllers
 
         //-- GET api/events/{eventId}
         [HttpGet("{eventId}")]
+        [ProducesResponseType(200, Type = typeof(Event))]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> GetEventById(Guid eventId)
         {
             var @event = await _eventRepository.GetEventByIdAsync(eventId);
@@ -45,6 +50,8 @@ namespace WebApi.Controllers
 
         //-- POST api/events
         [HttpPost]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> Post([BindRequired, FromBody]Event @event)
         {
             if (!ModelState.IsValid)
@@ -56,6 +63,9 @@ namespace WebApi.Controllers
 
         //-- PUT api/events/{eventId}
         [HttpPut("{eventId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Put(Guid eventId, [BindRequired, FromBody]Event @event)
         {
             if (!ModelState.IsValid)
@@ -72,6 +82,8 @@ namespace WebApi.Controllers
 
         //-- DELETE api/events/{eventId}
         [HttpDelete("{eventId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(Guid eventId)
         {
             var existingEvent = await _eventRepository.GetEventByIdAsync(eventId);

@@ -11,7 +11,6 @@ namespace WebApi
 {
     public class Startup
     {
-
         public IConfiguration Configuration { get; }
 
         private readonly ILogger<Startup> _logger;
@@ -28,7 +27,14 @@ namespace WebApi
             _logger.LogInformation("Starting ConfigureServices.");
 
             services.AddSingleton<IEventRepository, EventRepository>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSwaggerGen(x =>
+            {
+                x.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "Content API", Version = "v1" });
+            });
+
             services.AddLogging();
         }
 
@@ -50,6 +56,12 @@ namespace WebApi
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(x =>
+            {
+                x.SwaggerEndpoint("/swagger/v1/swagger.json", "Content API v1");
+            });
         }
 
         private void OnApplicationStarted()
