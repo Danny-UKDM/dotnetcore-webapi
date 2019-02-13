@@ -31,6 +31,10 @@ Running the Web API project locally will create a local test PostgreSQL database
 
 On application close (`ctrl` + `c` from the terminal window), the test database will be dropped and the connection disposed of.
 
+### Swagger
+
+This project uses [Swagger](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) to document the API - see `https://localhost:{port}/swagger/` when running the project.
+
 ## Built With
 
 * [.Net Core Web API](https://docs.microsoft.com/en-us/aspnet/core/web-api/) - Framework
