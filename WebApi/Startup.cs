@@ -1,11 +1,12 @@
-﻿using DatabaseInitialiser;
+﻿using Badger.Data;
+using DatabaseInitialiser;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WebApi.Services;
+using Npgsql;
 
 namespace WebApi
 {
@@ -26,14 +27,16 @@ namespace WebApi
         {
             _logger.LogInformation("Starting ConfigureServices.");
 
-            services.AddSingleton<IEventRepository, EventRepository>();
+            services.AddSingleton(SessionFactory.With(config =>
+                config.WithConnectionString(Configuration.GetConnectionString("Content"))
+                      .WithProviderFactory(NpgsqlFactory.Instance)));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(x =>
-            {
-                x.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "Content API", Version = "v1" });
-            });
+                {
+                    x.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info {Title = "Content API", Version = "v1"});
+                });
 
             services.AddLogging();
         }
@@ -68,7 +71,7 @@ namespace WebApi
         {
             _logger.LogInformation("Creating and seeding database.");
 
-            _initialiser = new Initialiser("content");
+            _initialiser = new Initialiser(Configuration.GetConnectionString("Content"));
             _initialiser.Init();
         }
 
