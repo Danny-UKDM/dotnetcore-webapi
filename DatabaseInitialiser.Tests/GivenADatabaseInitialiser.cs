@@ -9,13 +9,15 @@ namespace DatabaseInitialiser.Tests
 {
     public class GivenAnInitialiser : IDisposable
     {
-        private readonly ISessionFactory _sessionFactory;
+        private readonly string _connectionString;
         private readonly Initialiser _initialiser;
+        private readonly ISessionFactory _sessionFactory;
         private const string Database = "testdatabase";
 
         public GivenAnInitialiser()
         {
-            _initialiser = new Initialiser(Database);
+            _connectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false;Database=testdatabase;";
+            _initialiser = new Initialiser(_connectionString);
             _initialiser.Init();
 
             _sessionFactory = CreateSessionFactory();
@@ -35,38 +37,40 @@ namespace DatabaseInitialiser.Tests
         public ISessionFactory CreateSessionFactory()
         {
             return SessionFactory.With(config =>
-                config.WithConnectionString(_initialiser.ConnectionString)
+                config.WithConnectionString(_connectionString)
                       .WithProviderFactory(NpgsqlFactory.Instance));
         }
 
-        protected void InsertTestData()
+        private void InsertTestData()
         {
             var event1 = new EventBuilder().CreateEvent("Cool Event").Build();
             var event2 = new EventBuilder().CreateEvent("Cooler Event").Build();
             var event3 = new EventBuilder().CreateEvent("Coolest Event").Build();
 
-            const string insertSql = @"insert into events (
-                    eventId,
-                    partnerId,
-                    eventName,
-                    addressLine1,
-                    postalCode,
-                    city,
-                    country,
-                    latitude,
-                    longitude
-                    ) values (
-                    @eventId,
-                    @partnerId,
-                    @eventName,
-                    @addressLine1,
-                    @postalCode,
-                    @city,
-                    @country,
-                    @latitude,
-                    @longitude )";
+            const string insertSql = @"
+insert into events (
+    eventId,
+    partnerId,
+    eventName,
+    addressLine1,
+    postalCode,
+    city,
+    country,
+    latitude,
+    longitude
+) values (
+    @eventId,
+    @partnerId,
+    @eventName,
+    @addressLine1,
+    @postalCode,
+    @city,
+    @country,
+    @latitude,
+    @longitude
+)";
 
-            using (var conn = new NpgsqlConnection(_initialiser.ConnectionString))
+            using (var conn = new NpgsqlConnection(_connectionString))
             {
                 conn.Execute(insertSql, event1);
                 conn.Execute(insertSql, event2);

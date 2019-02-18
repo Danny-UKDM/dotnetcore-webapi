@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Badger.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using WebApi.Data.Commands;
+using WebApi.Data.Queries;
 using WebApi.Models;
-using WebApi.Services;
 
 namespace WebApi.Controllers
 {
@@ -13,39 +15,40 @@ namespace WebApi.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private readonly IEventRepository _eventRepository;
+        private readonly ISessionFactory _sessionFactory;
 
-        public EventsController(IEventRepository eventRepository)
-        {
-            _eventRepository = eventRepository;
-        }
+        public EventsController(ISessionFactory sessionFactory) => 
+            _sessionFactory = sessionFactory;
 
         //-- GET api/events
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Event>))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetAllEvents()
+        public async Task<IActionResult> Get()
         {
-            var events = await _eventRepository.GetAllEventsAsync();
-
-            if (!events.Any())
-                return NotFound();
-
-            return Ok(events);
+            using (var session = _sessionFactory.CreateQuerySession())
+            {
+                var events = await session.ExecuteAsync(new GetAllEventsQuery());
+                return events.Any()
+                    ? Ok(events)
+                    : (IActionResult)NotFound();
+            }
         }
 
         //-- GET api/events/{eventId}
         [HttpGet("{eventId}")]
         [ProducesResponseType(200, Type = typeof(Event))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetEventById(Guid eventId)
+        public async Task<IActionResult> Get(Guid eventId)
         {
-            var @event = await _eventRepository.GetEventByIdAsync(eventId);
+            using (var session = _sessionFactory.CreateQuerySession())
+            {
+                var @event = await session.ExecuteAsync(new GetEventByIdQuery(eventId));
 
-            if (@event == null)
-                return NotFound();
-
-            return Ok(@event);
+                return @event != null
+                    ? Ok(@event)
+                    : (IActionResult)NotFound();
+            }
         }
 
         //-- POST api/events
@@ -57,8 +60,13 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            await _eventRepository.AddEventAsync(@event);
-            return CreatedAtAction(nameof(GetEventById), new { eventId = @event.EventId }, @event);
+            using (var session = _sessionFactory.CreateCommandSession())
+            {
+                await session.ExecuteAsync(new InsertEventCommand(@event));
+                session.Commit();
+            }
+
+            return CreatedAtAction(nameof(Get), new {eventId = @event.EventId}, @event);
         }
 
         //-- PUT api/events/{eventId}
@@ -71,13 +79,15 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var existingEvent = await _eventRepository.GetEventByIdAsync(eventId);
+            using (var session = _sessionFactory.CreateCommandSession())
+            {
+                var affected = await session.ExecuteAsync(new UpdateEventCommand(eventId, @event));
+                session.Commit();
 
-            if (existingEvent == null)
-                return NotFound();
-
-            await _eventRepository.UpdateEventAsync(@event, eventId);
-            return NoContent();
+                return affected != 0
+                    ? NoContent()
+                    : (IActionResult)NotFound();
+            }
         }
 
         //-- DELETE api/events/{eventId}
@@ -86,13 +96,15 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(Guid eventId)
         {
-            var existingEvent = await _eventRepository.GetEventByIdAsync(eventId);
+            using (var session = _sessionFactory.CreateCommandSession())
+            {
+                var affected = await session.ExecuteAsync(new DeleteEventCommand(eventId));
+                session.Commit();
 
-            if (existingEvent == null)
-                return NotFound();
-
-            await _eventRepository.DeleteEventAsync(eventId);
-            return NoContent();
+                return affected != 0
+                    ? NoContent()
+                    : (IActionResult)NotFound();
+            }
         }
     }
 }

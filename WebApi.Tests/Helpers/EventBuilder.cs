@@ -7,13 +7,12 @@ namespace WebApi.Tests.Helpers
     {
         private readonly Event _event;
 
-        public EventBuilder()
-        {
+        private EventBuilder(string eventName) =>
             _event = new Event
             {
                 EventId = Guid.NewGuid(),
                 PartnerId = Guid.NewGuid(),
-                EventName = "Some Event Name",
+                EventName = eventName,
                 AddressLine1 = "Some Address",
                 PostalCode = "NG71FB",
                 City = "Some City",
@@ -21,13 +20,9 @@ namespace WebApi.Tests.Helpers
                 Latitude = new Random().Next(-90, 90),
                 Longitude = new Random().Next(-180, 180)
             };
-        }
 
-        public EventBuilder CreateEvent(string eventName)
-        {
-            _event.EventName = eventName;
-            return this;
-        }
+        public static EventBuilder CreateEvent(string eventName) =>
+            new EventBuilder(eventName);
 
         public EventBuilder InCity(string city)
         {
@@ -35,9 +30,6 @@ namespace WebApi.Tests.Helpers
             return this;
         }
 
-        public Event Build()
-        {
-            return _event;
-        }
+        public Event Build() => _event;
     }
 }

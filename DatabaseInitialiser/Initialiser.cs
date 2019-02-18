@@ -6,13 +6,17 @@ namespace DatabaseInitialiser
 {
     public class Initialiser : IDisposable
     {
-        private string Database { get; }
-        private const string BaseConnectionString = "Host=localhost;Username=postgres;Password=password;Pooling=false";
-        public string ConnectionString => $"{BaseConnectionString};Database={Database}";
+        private readonly string _connectionString;
+        private readonly string _adminConnectionString;
+        private readonly string _database;
 
-        public Initialiser(string database)
+        public Initialiser(string connectionString)
         {
-            Database = database;
+            _connectionString = connectionString;
+            var builder = new NpgsqlConnectionStringBuilder(connectionString);
+            _database = builder.Database;
+            builder.Database = builder.Username;
+            _adminConnectionString = builder.ToString();
         }
 
         public void Init()
@@ -25,9 +29,9 @@ namespace DatabaseInitialiser
         {
             try
             {
-                using (var conn = new NpgsqlConnection(BaseConnectionString))
+                using (var conn = new NpgsqlConnection(_adminConnectionString))
                 {
-                    conn.Execute($"create database {Database}");
+                    conn.Execute($"create database {_database}");
                 }
             }
             catch (Exception ex)
@@ -40,21 +44,22 @@ namespace DatabaseInitialiser
         {
             try
             {
-                using (var conn = new NpgsqlConnection(ConnectionString))
+                using (var conn = new NpgsqlConnection(_connectionString))
                 {
-                    conn.Execute(@"create table events
-                    (
-                        id bigserial primary key,
-                        eventId uuid not null,
-                        partnerId uuid not null,
-                        eventName varchar(100) not null,
-                        addressLine1 varchar(100) not null,
-                        postalCode varchar(10) not null,
-                        city varchar(100) not null,
-                        country varchar(100) not null,
-                        latitude float8 not null,
-                        longitude float8 not null
-                    )");
+                    conn.Execute(@"
+create table events
+(
+    id bigserial primary key,
+    eventId uuid not null,
+    partnerId uuid not null,
+    eventName varchar(100) not null,
+    addressLine1 varchar(100) not null,
+    postalCode varchar(10) not null,
+    city varchar(100) not null,
+    country varchar(100) not null,
+    latitude float8 not null,
+    longitude float8 not null
+)");
                 }
             }
             catch (Exception ex)
@@ -72,14 +77,14 @@ namespace DatabaseInitialiser
         {
             try
             {
-                using (var conn = new NpgsqlConnection(BaseConnectionString))
+                using (var conn = new NpgsqlConnection(_adminConnectionString))
                 {
                     conn.Execute($@"
                         select pg_terminate_backend(pg_stat_activity.pid)
                         from pg_stat_activity
-                        where pg_stat_activity.datname = '{Database}'");
+                        where pg_stat_activity.datname = '{_database}'");
 
-                    conn.Execute($"drop database {Database}");
+                    conn.Execute($"drop database {_database}");
                 }
             }
             catch (Exception ex)
