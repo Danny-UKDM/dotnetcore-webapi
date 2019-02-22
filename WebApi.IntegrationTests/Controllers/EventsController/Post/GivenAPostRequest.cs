@@ -1,11 +1,9 @@
-﻿using System;
+﻿using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Badger.Data;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Newtonsoft.Json;
 using WebApi.IntegrationTests.Data;
 using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
@@ -13,46 +11,63 @@ using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Post
 {
-    public class GivenAPostRequest : IClassFixture<WebApplicationFactory<Startup>>, IDisposable
+    [Collection(nameof(EventsCollection))]
+    public class GivenAPostRequest : IClassFixture<GivenAPostRequest.PostRequest>
     {
-        private readonly HttpClient _client;
-        private readonly ISessionFactory _sessionFactory;
-        private readonly Event _event;
-
-        public GivenAPostRequest(WebApplicationFactory<Startup> factory)
+        public class PostRequest : IAsyncLifetime
         {
-            _client = factory.CreateClient();
-            _sessionFactory = DataUtils.CreateSessionFactory();
+            private readonly ApiWebApplicationFactory _factory;
+            public Event Event { get; private set; }
+            public HttpResponseMessage Response { get; private set; }
 
-            _event = new EventBuilder().CreateEvent("Nice Test Event")
-                                       .InCity("Nice Test City City")
-                                       .Build();
+            public PostRequest(ApiWebApplicationFactory factory) => _factory = factory;
+
+            public async Task InitializeAsync()
+            {
+                Event = EventBuilder.CreateEvent("Nice Test Event")
+                                    .InCity("Nice Test City City")
+                                    .Build();
+                
+                var httpContent = new ObjectContent<Event>(Event, new JsonMediaTypeFormatter(), "application/json");
+
+                Response = await _factory.Client
+                                         .PostAsync("/api/events", httpContent);
+            }
+
+            public async Task<Event> LoadStoredEvent()
+            {
+                using (var session = _factory.SessionFactory.CreateQuerySession())
+                {
+                    return await session.ExecuteAsync(new GetEventByIdQuery(Event.EventId));
+                }
+            }
+
+            public async Task DisposeAsync()
+            {
+                using (var session = _factory.SessionFactory.CreateCommandSession())
+                {
+                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    session.Commit();
+                }
+            }
         }
+
+        private readonly PostRequest _fixture;
+
+        public GivenAPostRequest(PostRequest fixture) => _fixture = fixture;
 
         [Fact]
-        public async Task ThenTheRequestSuccessfullyAddsTheEvent()
-        {
-            var eventJson = JsonConvert.SerializeObject(_event);
-            var stringContent = new StringContent(eventJson, Encoding.UTF8, "application/json");
+        public void ThenTheExpectedResponseStatusCodeWasReceived() =>
+            _fixture.Response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-            var response = await _client.PostAsync("/api/events", stringContent);
+        [Fact]
+        public void ThenTheExpectedResponseContentTypeWasReceived() =>
+            _fixture.Response.Content.Headers.ContentType.Should()
+                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") {CharSet = "utf-8"});
 
-            response.IsSuccessStatusCode.Should().BeTrue();
-            response.Content.Headers.ContentType.ToString().Should().Be("application/json; charset=utf-8");
+        [Fact]
+        public async Task ThenTheEventShouldBeStored() =>
+            (await _fixture.LoadStoredEvent()).Should().BeEquivalentTo(_fixture.Event);
 
-            using (var session = _sessionFactory.CreateQuerySession())
-            {
-                session.Execute(new CountRowsByEventIdQuery(new[] {_event.EventId})).Should().Be(1);
-            }
-        }
-
-        public void Dispose()
-        {
-            using (var session = _sessionFactory.CreateCommandSession())
-            {
-                session.Execute(new DeleteRowsByEventIdCommand(new[] {_event.EventId}));
-                session.Commit();
-            }
-        }
     }
 }

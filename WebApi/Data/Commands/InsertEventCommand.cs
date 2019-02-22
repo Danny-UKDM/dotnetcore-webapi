@@ -5,45 +5,43 @@ namespace WebApi.Data.Commands
 {
     internal class InsertEventCommand : ICommand
     {
-        private readonly Event _event;
+        public Event Event { get; }
 
-        public InsertEventCommand(Event @event)
-        {
-            _event = @event;
-        }
-        public IPreparedCommand Prepare(ICommandBuilder builder)
-        {
-            return builder
-               .WithSql(@"insert into events (
-                    eventId,
-                    partnerId,
-                    eventName,
-                    addressLine1,
-                    postalCode,
-                    city,
-                    country,
-                    latitude,
-                    longitude
-                    ) values (
-                    @eventId,
-                    @partnerId,
-                    @eventName,
-                    @addressLine1,
-                    @postalCode,
-                    @city,
-                    @country,
-                    @latitude,
-                    @longitude )")
-               .WithParameter("eventId", _event.EventId)
-               .WithParameter("partnerId", _event.PartnerId)
-               .WithParameter("eventName", _event.EventName)
-               .WithParameter("addressLine1", _event.AddressLine1)
-               .WithParameter("postalCode", _event.PostalCode)
-               .WithParameter("city", _event.City)
-               .WithParameter("country", _event.Country)
-               .WithParameter("latitude", _event.Latitude)
-               .WithParameter("longitude", _event.Longitude)
-               .Build();
-        }
+        public InsertEventCommand(Event @event) => Event = @event;
+
+        public IPreparedCommand Prepare(ICommandBuilder builder) =>
+            builder
+                .WithSql(@"
+insert into events (
+    eventId,
+    partnerId,
+    eventName,
+    addressLine1,
+    postalCode,
+    city,
+    country,
+    latitude,
+    longitude
+ ) values (
+    @eventId,
+    @partnerId,
+    @eventName,
+    @addressLine1,
+    @postalCode,
+    @city,
+    @country,
+    @latitude,
+    @longitude
+ )")
+                .WithParameter("eventId", Event.EventId)
+                .WithParameter("partnerId", Event.PartnerId)
+                .WithParameter("eventName", Event.EventName)
+                .WithParameter("addressLine1", Event.AddressLine1)
+                .WithParameter("postalCode", Event.PostalCode)
+                .WithParameter("city", Event.City)
+                .WithParameter("country", Event.Country)
+                .WithParameter("latitude", Event.Latitude)
+                .WithParameter("longitude", Event.Longitude)
+                .Build();
     }
 }

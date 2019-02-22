@@ -6,39 +6,39 @@ namespace WebApi.Data.Commands
 {
     internal class UpdateEventCommand : ICommand
     {
-        private readonly Event _newEvent;
-        private readonly Guid _existingEventId;
+        public Guid EventId { get; }
+        public Event Details { get; }
 
-        public UpdateEventCommand(Event newNewEvent, Guid existingEventId)
+        public UpdateEventCommand(Guid eventId, Event details)
         {
-            _newEvent = newNewEvent;
-            _existingEventId = existingEventId;
+            EventId = eventId;
+            Details = details;
         }
-        public IPreparedCommand Prepare(ICommandBuilder builder)
-        {
-            return builder
-               .WithSql(@"update events set
-                    eventId = @eventId,
-                    partnerId = @partnerId,
-                    eventName = @eventName,
-                    addressLine1 = @addressLine1,
-                    postalCode = @postalCode,
-                    city = @city,
-                    country = @country,
-                    latitude = @latitude,
-                    longitude = @longitude
-                    where eventId = @existingEventId")
-               .WithParameter("existingEventId", _existingEventId)
-               .WithParameter("eventId", _newEvent.EventId)
-               .WithParameter("partnerId", _newEvent.PartnerId)
-               .WithParameter("eventName", _newEvent.EventName)
-               .WithParameter("addressLine1", _newEvent.AddressLine1)
-               .WithParameter("postalCode", _newEvent.PostalCode)
-               .WithParameter("city", _newEvent.City)
-               .WithParameter("country", _newEvent.Country)
-               .WithParameter("latitude", _newEvent.Latitude)
-               .WithParameter("longitude", _newEvent.Longitude)
-               .Build();
-        }
+        
+        public IPreparedCommand Prepare(ICommandBuilder builder) =>
+            builder
+                .WithSql(@"
+update events set
+    eventId = @eventId,
+    partnerId = @partnerId,
+    eventName = @eventName,
+    addressLine1 = @addressLine1,
+    postalCode = @postalCode,
+    city = @city,
+    country = @country,
+    latitude = @latitude,
+    longitude = @longitude
+where eventId = @existingEventId")
+                .WithParameter("existingEventId", EventId)
+                .WithParameter("eventId", Details.EventId)
+                .WithParameter("partnerId", Details.PartnerId)
+                .WithParameter("eventName", Details.EventName)
+                .WithParameter("addressLine1", Details.AddressLine1)
+                .WithParameter("postalCode", Details.PostalCode)
+                .WithParameter("city", Details.City)
+                .WithParameter("country", Details.Country)
+                .WithParameter("latitude", Details.Latitude)
+                .WithParameter("longitude", Details.Longitude)
+                .Build();
     }
 }

@@ -5,19 +5,16 @@ namespace WebApi.Data.Commands
 {
     public class DeleteEventCommand : ICommand
     {
-        private readonly Guid _eventId;
+        public Guid EventId { get; }
 
-        public DeleteEventCommand(Guid eventId)
-        {
-            _eventId = eventId;
-        }
-        public IPreparedCommand Prepare(ICommandBuilder builder)
-        {
-            return builder
-               .WithSql(@"delete from events
-                    where eventId = @eventId")
-               .WithParameter("eventId", _eventId)
-               .Build();
-        }
+        public DeleteEventCommand(Guid eventId) => EventId = eventId;
+
+        public IPreparedCommand Prepare(ICommandBuilder builder) =>
+            builder
+                .WithSql(@"
+delete from events
+where eventId = @eventId")
+                .WithParameter("eventId", EventId)
+                .Build();
     }
 }
