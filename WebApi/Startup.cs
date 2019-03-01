@@ -59,6 +59,7 @@ namespace WebApi
 
             app.UseHttpsRedirection();
             app.UseMvc();
+            app.UseStaticFiles();
 
             app.UseSwagger();
             app.UseSwaggerUI(x =>
@@ -69,7 +70,7 @@ namespace WebApi
 
         private void OnApplicationStarted()
         {
-            _logger.LogInformation("Creating and seeding database.");
+            _logger.LogInformation("Creating database.");
 
             _initialiser = new Initialiser(Configuration.GetConnectionString("Content"));
             _initialiser.Init();
