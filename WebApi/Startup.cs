@@ -1,4 +1,5 @@
-﻿using Badger.Data;
+﻿using System.IO.Pipes;
+using Badger.Data;
 using DatabaseInitialiser;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using WebApi.Data.Writers;
 
 namespace WebApi
 {
@@ -30,6 +32,8 @@ namespace WebApi
             services.AddSingleton(SessionFactory.With(config =>
                 config.WithConnectionString(Configuration.GetConnectionString("Content"))
                       .WithProviderFactory(NpgsqlFactory.Instance)));
+
+            services.AddTransient<IImageWriter, ImageWriter>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

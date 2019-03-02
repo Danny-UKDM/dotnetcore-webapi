@@ -6,8 +6,6 @@ namespace WebApi.Data.Writers
 {
     public interface IImageWriter
     {
-        Task<string> UploadImage(IFormFile file);
-        ImageModelResult ValidateImageFile(IFormFile file);
-        Task<string> WriteImageFile(IFormFile file);
+        Task<ModelResult<IFormFile>> UploadImage(IFormFile file);
     }
 }

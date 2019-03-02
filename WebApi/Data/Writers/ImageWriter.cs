@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using WebApi.Models;
 
@@ -11,44 +9,70 @@ namespace WebApi.Data.Writers
 {
     public class ImageWriter : IImageWriter
     {
-        public async Task<string> UploadImage(IFormFile file)
-        {
-            if (ValidateImageFile(file).Errors.Any())
-            {
-                return "Invalid image file";
-            }
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-            return await WriteImageFile(file);
+        public ImageWriter(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
         }
 
-        public ImageModelResult ValidateImageFile(IFormFile file)
+        public async Task<ModelResult<IFormFile>> UploadImage(IFormFile file)
         {
-            var modelResult = new ImageModelResult { Errors = new List<ImageModelError>() };
+            var modelResult = ValidateImageFile(file);
 
+            if (modelResult.Result == ResultStatus.Failed)
+                return modelResult;
+
+            return await WriteImageFile(modelResult);
+        }
+
+        private ModelResult<IFormFile> ValidateImageFile(IFormFile file)
+        {
             if (file.Length == 0)
-                modelResult.Errors.Add(new ImageModelError { Error = "File size is zero" });
+                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is zero.");
+
+            if (file.Length >= 5e+7)
+                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is too large.");
+
+            if (!IsValidType(file))
+                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image is not a valid type.");
+
+            return new ModelResult<IFormFile>(file);
         }
 
-        public async Task<string> WriteImageFile(IFormFile file)
+        private static bool IsValidType(IFormFile file)
         {
-            string fileId;
+            var contentType = file.ContentType;
+
+            switch (contentType)
+            {
+                case "image/png":
+                case "image/gif":
+                case "image/jpeg":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private async Task<ModelResult<IFormFile>> WriteImageFile(ModelResult<IFormFile> modelResult)
+        {
             try
             {
-                var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
-                fileId = Guid.NewGuid().ToString() + extension;
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileId);
+                var extension = "." + modelResult.Data.ContentType.Split('/')[modelResult.Data.ContentType.Split('/').Length - 1];
+                var path = Path.Combine(_hostingEnvironment.WebRootPath, "images", modelResult.ImageId + extension);
 
                 using (var bits = new FileStream(path, FileMode.Create))
                 {
-                    await file.CopyToAsync(bits);
+                    await modelResult.Data.CopyToAsync(bits);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return e.Message;
+                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
             }
 
-            return fileId;
+            return modelResult;
         }
     }
 }
