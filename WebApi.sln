@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.329
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28621.142
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csproj", "{C2F73DAB-91F7-4481-B7FE-78CC40990252}"
 EndProject
@@ -16,7 +16,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseInitialiser", "Data
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseInitialiser.Tests", "DatabaseInitialiser.Tests\DatabaseInitialiser.Tests.csproj", "{6DDE6970-3F32-4471-8387-11A4546C094D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi.IntegrationTests", "WebApi.IntegrationTests\WebApi.IntegrationTests.csproj", "{687A8421-F2D0-42C4-A909-9B9BA1A49629}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi.IntegrationTests", "WebApi.IntegrationTests\WebApi.IntegrationTests.csproj", "{687A8421-F2D0-42C4-A909-9B9BA1A49629}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalstackInitialiser", "LocalstackInitialiser\LocalstackInitialiser.csproj", "{E30F8A46-A308-4E2B-8F6F-D2CB3EEB1673}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalstackInitialiser.Tests", "LocalstackInitialiser.Tests\LocalstackInitialiser.Tests.csproj", "{E7DFC0C4-D22D-458B-84B0-37945890F4DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +48,14 @@ Global
 		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{687A8421-F2D0-42C4-A909-9B9BA1A49629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E30F8A46-A308-4E2B-8F6F-D2CB3EEB1673}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E30F8A46-A308-4E2B-8F6F-D2CB3EEB1673}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E30F8A46-A308-4E2B-8F6F-D2CB3EEB1673}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E30F8A46-A308-4E2B-8F6F-D2CB3EEB1673}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7DFC0C4-D22D-458B-84B0-37945890F4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7DFC0C4-D22D-458B-84B0-37945890F4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7DFC0C4-D22D-458B-84B0-37945890F4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7DFC0C4-D22D-458B-84B0-37945890F4DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

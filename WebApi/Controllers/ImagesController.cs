@@ -34,13 +34,13 @@ namespace WebApi.Controllers
         //-- POST api/images
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(400, Type = typeof(IFormFile))]
         public async Task<IActionResult> Post(IFormFile file)
         {
             var modelResult = await _imageWriter.UploadImage(file);
 
             if (modelResult.Result == ResultStatus.Failed)
-                return BadRequest();
+                return BadRequest(modelResult);
 
             return CreatedAtAction(nameof(Get), new { imageId = modelResult.ImageId }, modelResult);
         }
