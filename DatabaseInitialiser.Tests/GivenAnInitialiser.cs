@@ -12,7 +12,6 @@ namespace DatabaseInitialiser.Tests
         private readonly string _connectionString;
         private readonly Initialiser _initialiser;
         private readonly ISessionFactory _sessionFactory;
-        private const string Database = "testdatabase";
 
         public GivenAnInitialiser()
         {

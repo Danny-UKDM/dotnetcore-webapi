@@ -26,7 +26,7 @@ namespace WebApi.Data.Writers
             return await WriteImageFile(modelResult);
         }
 
-        private ModelResult<IFormFile> ValidateImageFile(IFormFile file)
+        private static ModelResult<IFormFile> ValidateImageFile(IFormFile file)
         {
             if (file.Length == 0)
                 return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is zero.");
