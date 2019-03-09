@@ -1,7 +1,6 @@
 version: '3.7'
 
 services:
-  
   localstack-s3:
     image: localstack/localstack:latest
     container_name: localstack-s3
@@ -16,6 +15,5 @@ services:
       - localstack-data:/tmp/localstack
 
 volumes:
-
   localstack-data:
     name: localstack-data
