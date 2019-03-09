@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Amazon.S3;
+using Amazon.S3.Model;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using WebApi.Models;
@@ -10,10 +12,17 @@ namespace WebApi.Data.Writers
     public class ImageWriter : IImageWriter
     {
         private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly AmazonS3Config _amazonS3Config;
 
         public ImageWriter(IHostingEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
+            _amazonS3Config = new AmazonS3Config
+            {
+                ServiceURL = "http://localhost:4572",
+                AuthenticationRegion = "eu-west-1",
+                ForcePathStyle = true
+            };
         }
 
         public async Task<ModelResult<IFormFile>> UploadImage(IFormFile file)
@@ -23,7 +32,7 @@ namespace WebApi.Data.Writers
             if (modelResult.Result == ResultStatus.Failed)
                 return modelResult;
 
-            return await WriteImageFile(modelResult);
+            return await WriteImageToS3(modelResult);
         }
 
         private static ModelResult<IFormFile> ValidateImageFile(IFormFile file)
@@ -55,16 +64,26 @@ namespace WebApi.Data.Writers
             }
         }
 
-        private async Task<ModelResult<IFormFile>> WriteImageFile(ModelResult<IFormFile> modelResult)
+        private async Task<ModelResult<IFormFile>> WriteImageToS3(ModelResult<IFormFile> modelResult)
         {
             try
             {
-                var extension = "." + modelResult.Data.ContentType.Split('/')[modelResult.Data.ContentType.Split('/').Length - 1];
-                var path = Path.Combine(_hostingEnvironment.WebRootPath, "images", modelResult.ImageId + extension);
-
-                using (var bits = new FileStream(path, FileMode.Create))
+                string result;
+                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
                 {
-                    await modelResult.Data.CopyToAsync(bits);
+                    result = await reader.ReadToEndAsync();
+                }
+
+                var request = new PutObjectRequest
+                {
+                    BucketName = "imagesbucket",
+                    Key = modelResult.ImageId.ToString(),
+                    ContentBody = result
+                };
+
+                using (var amazonS3Client = new AmazonS3Client(_amazonS3Config))
+                {
+                    await amazonS3Client.PutObjectAsync(request);
                 }
             }
             catch (Exception ex)
