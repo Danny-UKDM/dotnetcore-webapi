@@ -3,36 +3,68 @@ using System.IO;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using WebApi.Models;
 
 namespace WebApi.Data.Writers
 {
-    public class ImageWriter : IImageWriter
+    public class ImageRepository : IImageRepository
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
-        private readonly AmazonS3Config _amazonS3Config;
+        private readonly AmazonS3Client _amazonS3Client;
 
-        public ImageWriter(IHostingEnvironment hostingEnvironment)
+        public ImageRepository()
         {
-            _hostingEnvironment = hostingEnvironment;
-            _amazonS3Config = new AmazonS3Config
+            var amazonS3Config = new AmazonS3Config
             {
                 ServiceURL = "http://localhost:4572",
                 AuthenticationRegion = "eu-west-1",
                 ForcePathStyle = true
             };
+
+            _amazonS3Client = new AmazonS3Client(amazonS3Config);
         }
 
-        public async Task<ModelResult<IFormFile>> UploadImage(IFormFile file)
+        public Task<ModelResult<IFormFile>> GetImageAsync(Guid key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file)
         {
             var modelResult = ValidateImageFile(file);
 
             if (modelResult.Result == ResultStatus.Failed)
                 return modelResult;
 
-            return await WriteImageToS3(modelResult);
+            try
+            {
+                string result;
+                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
+                {
+                    result = await reader.ReadToEndAsync();
+                }
+
+                var request = new PutObjectRequest
+                {
+                    BucketName = "imagesbucket",
+                    Key = modelResult.ImageId.ToString(),
+                    ContentBody = result
+                };
+
+                await _amazonS3Client.PutObjectAsync(request);
+
+            }
+            catch (Exception ex)
+            {
+                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
+            }
+
+            return modelResult;
+        }
+
+        public Task<ModelResult<IFormFile>> DeleteImageAsync(Guid key)
+        {
+            throw new NotImplementedException();
         }
 
         private static ModelResult<IFormFile> ValidateImageFile(IFormFile file)
@@ -62,36 +94,6 @@ namespace WebApi.Data.Writers
                 default:
                     return false;
             }
-        }
-
-        private async Task<ModelResult<IFormFile>> WriteImageToS3(ModelResult<IFormFile> modelResult)
-        {
-            try
-            {
-                string result;
-                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
-                {
-                    result = await reader.ReadToEndAsync();
-                }
-
-                var request = new PutObjectRequest
-                {
-                    BucketName = "imagesbucket",
-                    Key = modelResult.ImageId.ToString(),
-                    ContentBody = result
-                };
-
-                using (var amazonS3Client = new AmazonS3Client(_amazonS3Config))
-                {
-                    await amazonS3Client.PutObjectAsync(request);
-                }
-            }
-            catch (Exception ex)
-            {
-                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
-            }
-
-            return modelResult;
         }
     }
 }

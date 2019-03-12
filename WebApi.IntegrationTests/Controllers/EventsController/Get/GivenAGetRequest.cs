@@ -10,7 +10,7 @@ using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 {
-    [Collection(nameof(EventsCollection))]
+    [Collection(nameof(TestCollection))]
     public class GivenAGetRequest : IClassFixture<GivenAGetRequest.GetRequest>
     {
         public class GetRequest : IAsyncLifetime

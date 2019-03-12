@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace DatabaseInitialiser
 {
-    public class Initialiser : IDisposable
+    public class Initialiser
     {
         private readonly string _connectionString;
         private readonly string _adminConnectionString;
