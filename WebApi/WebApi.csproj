@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseInitialiser\DatabaseInitialiser.csproj" />
+    <ProjectReference Include="..\LocalstackInitialiser\LocalstackInitialiser.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Put
 {
-    [Collection(nameof(EventsCollection))]
+    [Collection(nameof(TestCollection))]
     public class GivenAPutRequest : IClassFixture<GivenAPutRequest.PutRequest>
     {
         public class PutRequest : IAsyncLifetime

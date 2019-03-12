@@ -11,11 +11,11 @@ namespace WebApi.Controllers
     [ApiController]
     public class ImagesController : ControllerBase
     {
-        private readonly IImageWriter _imageWriter;
+        private readonly IImageRepository _imageRepository;
 
-        public ImagesController(IImageWriter imageWriter)
+        public ImagesController(IImageRepository imageRepository)
         {
-            _imageWriter = imageWriter;
+            _imageRepository = imageRepository;
         }
 
         //-- GET api/images/{imageId}
@@ -37,7 +37,7 @@ namespace WebApi.Controllers
         [ProducesResponseType(400, Type = typeof(IFormFile))]
         public async Task<IActionResult> Post(IFormFile file)
         {
-            var modelResult = await _imageWriter.UploadImage(file);
+            var modelResult = await _imageRepository.SaveImageAsync(file);
 
             if (modelResult.Result == ResultStatus.Failed)
                 return BadRequest(modelResult);

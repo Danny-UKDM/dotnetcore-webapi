@@ -9,7 +9,7 @@ using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
 {
-    [Collection(nameof(EventsCollection))]
+    [Collection(nameof(TestCollection))]
     public class GivenADeleteRequest : IClassFixture<GivenADeleteRequest.DeleteRequest>
     {
         public class DeleteRequest : IAsyncLifetime
