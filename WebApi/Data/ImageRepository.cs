@@ -6,7 +6,7 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using WebApi.Models;
 
-namespace WebApi.Data.Writers
+namespace WebApi.Data
 {
     public class ImageRepository : IImageRepository
     {
@@ -24,9 +24,37 @@ namespace WebApi.Data.Writers
             _amazonS3Client = new AmazonS3Client(amazonS3Config);
         }
 
-        public Task<ModelResult<IFormFile>> GetImageAsync(Guid key)
+        public async Task<ModelResult<byte[]>> GetImageAsync(string imageId)
         {
-            throw new NotImplementedException();
+            var modelResult = ValidateImageRequest(imageId);
+
+            if (modelResult.Result == ResultStatus.Failed)
+                return modelResult;
+
+            try
+            {
+                var request = new GetObjectRequest
+                {
+                    BucketName = "imagesbucket",
+                    Key = imageId
+                };
+
+                var getObjectResponse = await _amazonS3Client.GetObjectAsync(request);
+
+                using (var responseStream = getObjectResponse.ResponseStream)
+                using (var reader = new StreamReader(responseStream))
+                using (var memoryStream = new MemoryStream())
+                {
+                    reader.BaseStream.CopyTo(memoryStream);
+                    modelResult.Data = memoryStream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ModelResult<byte[]>(ResultStatus.Failed, ex.Message);
+            }
+
+            return modelResult;
         }
 
         public async Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file)
@@ -44,10 +72,12 @@ namespace WebApi.Data.Writers
                     result = await reader.ReadToEndAsync();
                 }
 
+                modelResult.ImageId = string.Concat(Guid.NewGuid(), Path.GetFileName(file.FileName));
+
                 var request = new PutObjectRequest
                 {
                     BucketName = "imagesbucket",
-                    Key = modelResult.ImageId.ToString(),
+                    Key = modelResult.ImageId,
                     ContentBody = result
                 };
 
@@ -62,7 +92,7 @@ namespace WebApi.Data.Writers
             return modelResult;
         }
 
-        public Task<ModelResult<IFormFile>> DeleteImageAsync(Guid key)
+        public Task<ModelResult<IFormFile>> DeleteImageAsync(string key)
         {
             throw new NotImplementedException();
         }
@@ -75,16 +105,44 @@ namespace WebApi.Data.Writers
             if (file.Length >= 5e+7)
                 return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is too large.");
 
-            if (!IsValidType(file))
+            if (!IsValidType(file.ContentType))
                 return new ModelResult<IFormFile>(ResultStatus.Failed, "Image is not a valid type.");
 
             return new ModelResult<IFormFile>(file);
         }
 
-        private static bool IsValidType(IFormFile file)
+        private static ModelResult<byte[]> ValidateImageRequest(string imageId)
         {
-            var contentType = file.ContentType;
+            if (imageId.Length == 0)
+                return new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is empty.");
 
+            var contentType = ResolveContentTypeFromKey(imageId);
+            if (string.IsNullOrEmpty(contentType))
+                return new ModelResult<byte[]>(ResultStatus.Failed, "Failed to resolve content type from ImageId.");
+
+            return new ModelResult<byte[]>(imageId, contentType);
+        }
+
+        private static string ResolveContentTypeFromKey(string key)
+        {
+            var extension = Path.GetExtension(key);
+
+            switch (extension)
+            {
+                case ".png":
+                    return "image/png";
+                case ".gif":
+                    return "image/gif";
+                case ".jpeg":
+                case ".jpg":
+                    return "image/jpeg";
+                default:
+                    return "";
+            }
+        }
+
+        private static bool IsValidType(string contentType)
+        {
             switch (contentType)
             {
                 case "image/png":
