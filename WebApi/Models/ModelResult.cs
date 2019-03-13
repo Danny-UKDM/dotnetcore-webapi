@@ -7,19 +7,28 @@ namespace WebApi.Models
         public ModelResult(T data)
         {
             Data = data;
-            ImageId = Guid.NewGuid();
             Result = ResultStatus.Success;
         }
 
-        public ModelResult(ResultStatus result, string reason = "", T data = default(T))
+        public ModelResult(string imageId, string contentType)
+        {
+            Data = default(T);
+            ImageId = imageId;
+            ContentType = contentType;
+            Result = ResultStatus.Success;
+        }
+
+        public ModelResult(ResultStatus result, string reason = "", T data = default(T), string contentType = "")
         {
             Result = result;
             Data = data;
             Reason = reason;
+            ContentType = contentType;
         }
 
-        public T Data { get; }
-        public Guid ImageId { get; }
+        public T Data { get; set; }
+        public string ImageId { get; set; }
+        public string ContentType { get; set; }
         public ResultStatus Result { get; }
         public string Reason { get; }
     }
