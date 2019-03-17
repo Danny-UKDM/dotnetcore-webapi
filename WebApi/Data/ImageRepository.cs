@@ -4,16 +4,18 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using WebApi.Models;
 
 namespace WebApi.Data
 {
     public class ImageRepository : IImageRepository
     {
+        private readonly IConfiguration _configuration;
         private readonly AmazonS3Client _amazonS3Client;
-
-        public ImageRepository()
+        public ImageRepository(IConfiguration configuration)
         {
+            _configuration = configuration;
             var amazonS3Config = new AmazonS3Config
             {
                 ServiceURL = "http://localhost:4572",
@@ -24,7 +26,7 @@ namespace WebApi.Data
             _amazonS3Client = new AmazonS3Client(amazonS3Config);
         }
 
-        public async Task<ModelResult<byte[]>> GetImageAsync(string imageId)
+        public async Task<ModelResult<byte[]>> GetImageAsync(Guid imageId)
         {
             var modelResult = ValidateImageRequest(imageId);
 
@@ -35,11 +37,12 @@ namespace WebApi.Data
             {
                 var request = new GetObjectRequest
                 {
-                    BucketName = "imagesbucket",
-                    Key = imageId
+                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
+                    Key = imageId.ToString()
                 };
 
                 var getObjectResponse = await _amazonS3Client.GetObjectAsync(request);
+                modelResult.ContentType = getObjectResponse.Headers.ContentType;
 
                 using (var responseStream = getObjectResponse.ResponseStream)
                 using (var reader = new StreamReader(responseStream))
@@ -72,12 +75,12 @@ namespace WebApi.Data
                     result = await reader.ReadToEndAsync();
                 }
 
-                modelResult.ImageId = string.Concat(Guid.NewGuid(), Path.GetFileName(file.FileName));
+                modelResult.ImageId = Guid.NewGuid();
 
                 var request = new PutObjectRequest
                 {
-                    BucketName = "imagesbucket",
-                    Key = modelResult.ImageId,
+                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
+                    Key = modelResult.ImageId.ToString(),
                     ContentBody = result
                 };
 
@@ -111,16 +114,11 @@ namespace WebApi.Data
             return new ModelResult<IFormFile>(file);
         }
 
-        private static ModelResult<byte[]> ValidateImageRequest(string imageId)
+        private static ModelResult<byte[]> ValidateImageRequest(Guid imageId)
         {
-            if (imageId.Length == 0)
-                return new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is empty.");
-
-            var contentType = ResolveContentTypeFromKey(imageId);
-            if (string.IsNullOrEmpty(contentType))
-                return new ModelResult<byte[]>(ResultStatus.Failed, "Failed to resolve content type from ImageId.");
-
-            return new ModelResult<byte[]>(imageId, contentType);
+            return imageId != Guid.Empty 
+                ? new ModelResult<byte[]>(imageId) 
+                : new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is empty.");
         }
 
         private static string ResolveContentTypeFromKey(string key)

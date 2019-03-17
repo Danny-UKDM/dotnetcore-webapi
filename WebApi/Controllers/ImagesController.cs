@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Data;
@@ -21,7 +22,7 @@ namespace WebApi.Controllers
         [HttpGet("{imageId}")]
         [ProducesResponseType(200, Type = typeof(FileContentResult))]
         [ProducesResponseType(404, Type = typeof(string))]
-        public async Task<IActionResult> Get(string imageId)
+        public async Task<IActionResult> Get(Guid imageId)
         {
             var modelResult = await _imageRepository.GetImageAsync(imageId);
 
