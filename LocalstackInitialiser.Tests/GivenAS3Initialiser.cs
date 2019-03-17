@@ -25,7 +25,6 @@ namespace LocalstackInitialiser.Tests
                 AuthenticationRegion = "eu-west-1",
                 ForcePathStyle = true
             };
-            ;
         }
 
         [Fact]

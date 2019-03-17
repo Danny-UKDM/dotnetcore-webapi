@@ -27,7 +27,7 @@ namespace WebApi.IntegrationTests.Controllers
                 ForcePathStyle = true
             });
 
-            ImageBucketName = Configuration.GetSection("S3Bucket")["Images"];
+            ImageBucketName = Configuration.GetSection("S3Buckets")["Images"];
         }
 
         private IConfiguration Configuration => Server.Host.Services.GetRequiredService<IConfiguration>();

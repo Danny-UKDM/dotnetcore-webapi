@@ -26,20 +26,20 @@ namespace LocalstackInitialiser
             CreateS3Bucket();
         }
 
-        private async void CreateS3Bucket()
+        private void CreateS3Bucket()
         {
             using (var amazonS3Client = new AmazonS3Client(_amazonS3Config))
             {
-                var listBucketsResponse = await amazonS3Client.ListBucketsAsync();
+                var listBucketsResponse = amazonS3Client.ListBucketsAsync().Result;
 
                 if (listBucketsResponse.Buckets.Any(x => x.BucketName == _bucketName))
                     return;
 
-                await amazonS3Client.PutBucketAsync(new PutBucketRequest
+                amazonS3Client.PutBucketAsync(new PutBucketRequest
                 {
                     BucketName = _bucketName,
-                    BucketRegion = S3Region.EUW1
-                });
+                    UseClientRegion = true
+                }).Wait();
             }
         }
 
@@ -48,23 +48,23 @@ namespace LocalstackInitialiser
             DestroyBucket();
         }
 
-        private async void DestroyBucket()
+        private void DestroyBucket()
         {
             using (var amazonS3Client = new AmazonS3Client(_amazonS3Config))
             {
                 var listObjectsResponse =
-                    await amazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _bucketName });
+                    amazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _bucketName }).Result;
 
                 if (listObjectsResponse.S3Objects.Any())
                 {
-                    await amazonS3Client.DeleteObjectsAsync(new DeleteObjectsRequest
+                    amazonS3Client.DeleteObjectsAsync(new DeleteObjectsRequest
                     {
                         BucketName = _bucketName,
                         Objects = listObjectsResponse.S3Objects.Select(x => new KeyVersion { Key = x.Key }).ToList()
-                    });
+                    }).Wait();
                 }
 
-                await amazonS3Client.DeleteBucketAsync(_bucketName);
+                amazonS3Client.DeleteBucketAsync(_bucketName).Wait();
             }
         }
     }
