@@ -43,5 +43,18 @@ namespace WebApi.Controllers
                 ? CreatedAtAction(nameof(Get), new { imageId = modelResult.ImageId }, modelResult)
                 : (IActionResult)BadRequest(modelResult.Reason);
         }
+
+        //-- DELETE api/images/{imageId}
+        [HttpDelete("{imageId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404, Type = typeof(string))]
+        public async Task<IActionResult> Delete(Guid imageId)
+        {
+            var modelResult = await _imageRepository.DeleteImageAsync(imageId);
+
+            return modelResult.Result != ResultStatus.Failed
+                ? NoContent()
+                : (IActionResult)NotFound(modelResult.Reason);
+        }
     }
 }

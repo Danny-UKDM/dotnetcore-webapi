@@ -9,6 +9,6 @@ namespace WebApi.Data
     {
         Task<ModelResult<byte[]>> GetImageAsync(Guid imageId);
         Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file);
-        Task<ModelResult<IFormFile>> DeleteImageAsync(string key);
+        Task<ModelResult<object>> DeleteImageAsync(Guid imageId);
     }
 }
