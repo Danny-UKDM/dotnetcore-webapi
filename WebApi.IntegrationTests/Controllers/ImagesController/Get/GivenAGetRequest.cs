@@ -18,14 +18,15 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
         {
             private readonly ApiWebApplicationFactory _factory;
             private readonly Guid _imageKey = Guid.NewGuid();
+            private const string FileName = "1x1.gif";
             public HttpResponseMessage Response { get; private set; }
             public GetRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
                 string imageString;
-                using (var stream = File.OpenRead("../../../Controllers/ImagesController/Images/1x1.gif"))
-                using (var reader = new StreamReader(stream))
+                using (var imageStream = GetImageStream(FileName))
+                using (var reader = new StreamReader(imageStream))
                 {
                     imageString = await reader.ReadToEndAsync();
                 }
@@ -46,14 +47,17 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
             public string StoredTestImage()
             {
                 string fileString;
-                using (var stream = File.OpenRead("../../../Controllers/ImagesController/Images/1x1.gif"))
+                using (var imageStream = GetImageStream(FileName))
                 {
-                    var reader = new StreamReader(stream);
+                    var reader = new StreamReader(imageStream);
                     fileString = reader.ReadToEnd();
                 }
 
                 return fileString;
             }
+
+            private static FileStream GetImageStream(string fileName) =>
+                File.OpenRead($"../../../Controllers/ImagesController/Images/{fileName}");
 
             public async Task DisposeAsync()
             {

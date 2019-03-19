@@ -95,9 +95,29 @@ namespace WebApi.Data
             return modelResult;
         }
 
-        public Task<ModelResult<IFormFile>> DeleteImageAsync(string key)
+        public async Task<ModelResult<object>> DeleteImageAsync(Guid imageId)
         {
-            throw new NotImplementedException();
+            var modelResult = ValidateDeleteRequest(imageId);
+
+            if (modelResult.Result == ResultStatus.Failed)
+                return modelResult;
+
+            try
+            {
+                var request = new DeleteObjectRequest
+                {
+                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
+                    Key = imageId.ToString()
+                };
+
+                await _amazonS3Client.DeleteObjectAsync(request);
+            }
+            catch (Exception ex)
+            {
+                return new ModelResult<object>(ResultStatus.Failed, ex.Message);
+            }
+
+            return modelResult;
         }
 
         private static ModelResult<IFormFile> ValidateImageFile(IFormFile file)
@@ -116,27 +136,16 @@ namespace WebApi.Data
 
         private static ModelResult<byte[]> ValidateImageRequest(Guid imageId)
         {
-            return imageId != Guid.Empty 
-                ? new ModelResult<byte[]>(imageId) 
-                : new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is empty.");
+            return imageId != Guid.Empty
+                ? new ModelResult<byte[]>(imageId)
+                : new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is not valid.");
         }
 
-        private static string ResolveContentTypeFromKey(string key)
+        private static ModelResult<object> ValidateDeleteRequest(Guid imageId)
         {
-            var extension = Path.GetExtension(key);
-
-            switch (extension)
-            {
-                case ".png":
-                    return "image/png";
-                case ".gif":
-                    return "image/gif";
-                case ".jpeg":
-                case ".jpg":
-                    return "image/jpeg";
-                default:
-                    return "";
-            }
+            return imageId != Guid.Empty
+                ? new ModelResult<object>(imageId)
+                : new ModelResult<object>(ResultStatus.Failed, "ImageId is not valid.");
         }
 
         private static bool IsValidType(string contentType)
