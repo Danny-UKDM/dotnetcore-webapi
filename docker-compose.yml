@@ -1,16 +1,22 @@
-version: '3.7'
+version: "3.7"
 
 services:
-  localstack-s3:
-    image: localstack/localstack:latest
-    container_name: localstack-s3
+  postgres:
+    image: unidays/postgres-plv8:9.5.12-2.1.0
     environment:
-     - SERVICES=s3:4572
-     - DEFAULT_REGION=eu-west-1
-     - DATA_DIR=/tmp/localstack/data
+      - POSTGRES_PASSWORD=password
     ports:
-     - "4572:4572"
-     - "9999:8080"
+      - "5432:5432"
+
+  localstack:
+    image: localstack/localstack:0.8.10
+    environment:
+      - SERVICES=s3:4572
+      - DEFAULT_REGION=eu-west-1
+      - DATA_DIR=/tmp/localstack/data
+    ports:
+      - "4572:4572"
+      - "9999:8080"
     volumes:
       - localstack-data:/tmp/localstack
 
