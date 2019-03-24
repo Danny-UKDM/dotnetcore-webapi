@@ -19,13 +19,9 @@ namespace WebApi.Controllers
         //-- GET api/images/{imageId}
         [HttpGet("{imageId}")]
         [ProducesResponseType(200, Type = typeof(FileContentResult))]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Get(Guid imageId)
         {
-            if (imageId == Guid.Empty)
-                return BadRequest();
-
             var modelResult = await _imageRepository.GetImageAsync(imageId);
 
             return modelResult.Result != ResultStatus.Failed
@@ -66,13 +62,9 @@ namespace WebApi.Controllers
         //-- DELETE api/images/{imageId}
         [HttpDelete("{imageId}")]
         [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
         [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Delete(Guid imageId)
         {
-            if (imageId == Guid.Empty)
-                return BadRequest();
-
             var modelResult = await _imageRepository.DeleteImageAsync(imageId);
 
             return modelResult.Result != ResultStatus.Failed
