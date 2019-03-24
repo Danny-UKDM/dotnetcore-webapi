@@ -2,25 +2,19 @@
 
 namespace WebApi.Models
 {
-    public class ModelResult<T> where T : class
+    public class ReadModelResult<T> where T : class
     {
-        public ModelResult(T data)
+        public ReadModelResult(Guid imageId)
         {
-            Data = data;
-            Result = ResultStatus.Success;
-        }
-
-        public ModelResult(Guid imageId)
-        {
-            Data = default(T);
+            Data = default;
             ImageId = imageId;
             Result = ResultStatus.Success;
         }
 
-        public ModelResult(ResultStatus result, string reason = "")
+        public ReadModelResult(ResultStatus result, string reason = "")
         {
+            Data = default;
             Result = result;
-            Data = default(T);
             Reason = reason;
         }
 
@@ -29,11 +23,5 @@ namespace WebApi.Models
         public string ContentType { get; set; }
         public ResultStatus Result { get; }
         public string Reason { get; }
-    }
-
-    public enum ResultStatus
-    {
-        Failed,
-        Success
     }
 }
