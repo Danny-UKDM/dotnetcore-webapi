@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,25 +9,47 @@ using Amazon.S3.Model;
 using FluentAssertions;
 using Xunit;
 
-namespace WebApi.IntegrationTests.Controllers.ImagesController.Post
+namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
 {
     [Collection(nameof(TestCollection))]
-    public class GivenAPostRequest : IClassFixture<GivenAPostRequest.PostRequest>
+    public class GivenAnUpdateRequest : IClassFixture<GivenAnUpdateRequest.UpdateRequest>
     {
-        public class PostRequest : IAsyncLifetime
+        public class UpdateRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
+            private readonly Guid _imageKey = Guid.NewGuid();
+            private const string ExistingFileName = "1x1.gif";
+            private const string UpdatedFileName = "1x1.png";
             private ListObjectsV2Response _listObjectsResponse;
             public HttpResponseMessage Response { get; private set; }
             public int ImageCount => _listObjectsResponse.KeyCount;
 
-            public PostRequest(ApiWebApplicationFactory factory) => _factory = factory;
+            public UpdateRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
+                string imageString;
+                using (var imageStream = GetImageStream(ExistingFileName))
+                using (var reader = new StreamReader(imageStream))
+                {
+                    imageString = await reader.ReadToEndAsync();
+                }
+
+                var request = new PutObjectRequest
+                {
+                    BucketName = _factory.ImageBucketName,
+                    Key = _imageKey.ToString(),
+                    ContentBody = imageString,
+                    ContentType = "image/gif"
+                };
+
+                await _factory.AmazonS3Client.PutObjectAsync(request);
+
+
+
                 const string parameterName = "file";
-                const string fileName = "1x1.gif";
-                using (var imageStream = GetImageStream(fileName))
+
+                using (var imageStream = GetImageStream(UpdatedFileName))
                 using (var content = new MultipartFormDataContent
                 {
                     Headers =
@@ -34,7 +57,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Post
                         ContentDisposition = new ContentDispositionHeaderValue("form-data")
                         {
                             Name = parameterName,
-                            FileName = fileName
+                            FileName = UpdatedFileName
                         }
                     }
                 })
@@ -45,8 +68,9 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Post
                         {
                             ContentType = new MediaTypeHeaderValue("image/gif")
                         }
-                    }, parameterName, fileName);
-                    Response = await _factory.Client.PostAsync("/api/images", content);
+                    }, parameterName, UpdatedFileName);
+
+                    Response = await _factory.Client.PutAsync($"/api/images/{_imageKey}", content);
                 }
 
                 _listObjectsResponse = await _factory.AmazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _factory.ImageBucketName });
@@ -65,21 +89,16 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Post
             }
         }
 
-        private readonly PostRequest _fixture;
+        private readonly UpdateRequest _fixture;
 
-        public GivenAPostRequest(PostRequest fixture) => _fixture = fixture;
+        public GivenAnUpdateRequest(UpdateRequest fixture) => _fixture = fixture;
 
         [Fact]
         public void ThenTheExpectedResponseStatusCodeWasReceived() =>
-            _fixture.Response.StatusCode.Should().Be(HttpStatusCode.Created);
+            _fixture.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         [Fact]
-        public void ThenTheExpectedResponseContentTypeWasReceived() =>
-            _fixture.Response.Content.Headers.ContentType.Should()
-                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
-
-        [Fact]
-        public void ThenTheEventShouldBeStored() =>
+        public void TheTheExistingImageShouldBeReplaced() =>
             _fixture.ImageCount.Should().Be(1);
     }
 }

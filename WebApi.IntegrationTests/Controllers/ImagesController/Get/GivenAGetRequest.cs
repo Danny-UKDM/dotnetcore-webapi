@@ -66,7 +66,6 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
                     BucketName = _factory.ImageBucketName
                 });
 
-
                 await _factory.AmazonS3Client.DeleteObjectsAsync(new DeleteObjectsRequest
                 {
                     BucketName = _factory.ImageBucketName,

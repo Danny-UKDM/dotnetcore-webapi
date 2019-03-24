@@ -44,6 +44,20 @@ namespace WebApi.Controllers
                 : (IActionResult)BadRequest(modelResult.Reason);
         }
 
+        //-- PUT api/events/{imageId}
+        [HttpPut("{imageId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Put(Guid imageId, IFormFile file)
+        {
+            var modelResult = await _imageRepository.SaveImageAsync(file, imageId);
+
+            return modelResult.Result != ResultStatus.Failed
+                ? NoContent()
+                : (IActionResult)NotFound();
+        }
+
         //-- DELETE api/images/{imageId}
         [HttpDelete("{imageId}")]
         [ProducesResponseType(204)]
