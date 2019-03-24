@@ -60,12 +60,16 @@ namespace WebApi.Data
             return modelResult;
         }
 
-        public async Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file)
+        public async Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file, Guid imageId = default)
         {
             var modelResult = ValidateImageFile(file);
 
             if (modelResult.Result == ResultStatus.Failed)
                 return modelResult;
+
+            modelResult.ImageId = imageId == default
+                ? Guid.NewGuid()
+                : imageId;
 
             try
             {
@@ -75,7 +79,40 @@ namespace WebApi.Data
                     result = await reader.ReadToEndAsync();
                 }
 
-                modelResult.ImageId = Guid.NewGuid();
+                var request = new PutObjectRequest
+                {
+                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
+                    Key = modelResult.ImageId.ToString(),
+                    ContentBody = result
+                };
+
+                await _amazonS3Client.PutObjectAsync(request);
+
+            }
+            catch (Exception ex)
+            {
+                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
+            }
+
+            return modelResult;
+        }
+
+        public async Task<ModelResult<IFormFile>> UpdateImageAsync(Guid imageId, IFormFile file)
+        {
+            var modelResult = ValidateImageFile(file);
+
+            if (modelResult.Result == ResultStatus.Failed)
+                return modelResult;
+
+            modelResult.ImageId = imageId;
+
+            try
+            {
+                string result;
+                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
+                {
+                    result = await reader.ReadToEndAsync();
+                }
 
                 var request = new PutObjectRequest
                 {
