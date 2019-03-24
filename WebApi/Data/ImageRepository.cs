@@ -26,9 +26,9 @@ namespace WebApi.Data
             _amazonS3Client = new AmazonS3Client(amazonS3Config);
         }
 
-        public async Task<ModelResult<byte[]>> GetImageAsync(Guid imageId)
+        public async Task<ReadModelResult<byte[]>> GetImageAsync(Guid imageId)
         {
-            var modelResult = ValidateImageRequest(imageId);
+            var modelResult = ValidateReadRequest(imageId);
 
             if (modelResult.Result == ResultStatus.Failed)
                 return modelResult;
@@ -54,15 +54,15 @@ namespace WebApi.Data
             }
             catch (Exception ex)
             {
-                return new ModelResult<byte[]>(ResultStatus.Failed, ex.Message);
+                return new ReadModelResult<byte[]>(ResultStatus.Failed, ex.Message);
             }
 
             return modelResult;
         }
 
-        public async Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file, Guid imageId = default)
+        public async Task<CreateModelResult<IFormFile>> SaveImageAsync(IFormFile file, Guid imageId = default)
         {
-            var modelResult = ValidateImageFile(file);
+            var modelResult = ValidateCreateRequest(file);
 
             if (modelResult.Result == ResultStatus.Failed)
                 return modelResult;
@@ -73,17 +73,18 @@ namespace WebApi.Data
 
             try
             {
-                string result;
+                string imageString;
                 using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
                 {
-                    result = await reader.ReadToEndAsync();
+                    imageString = await reader.ReadToEndAsync();
                 }
 
                 var request = new PutObjectRequest
                 {
                     BucketName = _configuration.GetSection("S3Buckets")["Images"],
                     Key = modelResult.ImageId.ToString(),
-                    ContentBody = result
+                    ContentBody = imageString,
+                    ContentType = file.ContentType
                 };
 
                 await _amazonS3Client.PutObjectAsync(request);
@@ -91,48 +92,13 @@ namespace WebApi.Data
             }
             catch (Exception ex)
             {
-                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
+                return new CreateModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
             }
 
             return modelResult;
         }
 
-        public async Task<ModelResult<IFormFile>> UpdateImageAsync(Guid imageId, IFormFile file)
-        {
-            var modelResult = ValidateImageFile(file);
-
-            if (modelResult.Result == ResultStatus.Failed)
-                return modelResult;
-
-            modelResult.ImageId = imageId;
-
-            try
-            {
-                string result;
-                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
-                {
-                    result = await reader.ReadToEndAsync();
-                }
-
-                var request = new PutObjectRequest
-                {
-                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
-                    Key = modelResult.ImageId.ToString(),
-                    ContentBody = result
-                };
-
-                await _amazonS3Client.PutObjectAsync(request);
-
-            }
-            catch (Exception ex)
-            {
-                return new ModelResult<IFormFile>(ResultStatus.Failed, ex.Message);
-            }
-
-            return modelResult;
-        }
-
-        public async Task<ModelResult<object>> DeleteImageAsync(Guid imageId)
+        public async Task<DeleteModelResult> DeleteImageAsync(Guid imageId)
         {
             var modelResult = ValidateDeleteRequest(imageId);
 
@@ -144,45 +110,45 @@ namespace WebApi.Data
                 var request = new DeleteObjectRequest
                 {
                     BucketName = _configuration.GetSection("S3Buckets")["Images"],
-                    Key = imageId.ToString()
+                    Key = modelResult.ImageId.ToString()
                 };
 
                 await _amazonS3Client.DeleteObjectAsync(request);
             }
             catch (Exception ex)
             {
-                return new ModelResult<object>(ResultStatus.Failed, ex.Message);
+                return new DeleteModelResult(ResultStatus.Failed, ex.Message);
             }
 
             return modelResult;
         }
 
-        private static ModelResult<IFormFile> ValidateImageFile(IFormFile file)
+        private static CreateModelResult<IFormFile> ValidateCreateRequest(IFormFile file)
         {
             if (file.Length == 0)
-                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is zero.");
+                return new CreateModelResult<IFormFile>(ResultStatus.Failed, "Image size is zero.");
 
             if (file.Length >= 5e+7)
-                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image size is too large.");
+                return new CreateModelResult<IFormFile>(ResultStatus.Failed, "Image size is too large.");
 
             if (!IsValidType(file.ContentType))
-                return new ModelResult<IFormFile>(ResultStatus.Failed, "Image is not a valid type.");
+                return new CreateModelResult<IFormFile>(ResultStatus.Failed, "Image is not a valid type.");
 
-            return new ModelResult<IFormFile>(file);
+            return new CreateModelResult<IFormFile>(file);
         }
 
-        private static ModelResult<byte[]> ValidateImageRequest(Guid imageId)
+        private static ReadModelResult<byte[]> ValidateReadRequest(Guid imageId)
         {
             return imageId != Guid.Empty
-                ? new ModelResult<byte[]>(imageId)
-                : new ModelResult<byte[]>(ResultStatus.Failed, "ImageId is not valid.");
+                ? new ReadModelResult<byte[]>(imageId)
+                : new ReadModelResult<byte[]>(ResultStatus.Failed, "ImageId is not valid.");
         }
 
-        private static ModelResult<object> ValidateDeleteRequest(Guid imageId)
+        private static DeleteModelResult ValidateDeleteRequest(Guid imageId)
         {
             return imageId != Guid.Empty
-                ? new ModelResult<object>(imageId)
-                : new ModelResult<object>(ResultStatus.Failed, "ImageId is not valid.");
+                ? new DeleteModelResult(imageId)
+                : new DeleteModelResult(ResultStatus.Failed, "ImageId is not valid.");
         }
 
         private static bool IsValidType(string contentType)

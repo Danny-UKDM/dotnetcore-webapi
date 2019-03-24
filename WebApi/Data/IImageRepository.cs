@@ -7,8 +7,8 @@ namespace WebApi.Data
 {
     public interface IImageRepository
     {
-        Task<ModelResult<byte[]>> GetImageAsync(Guid imageId);
-        Task<ModelResult<IFormFile>> SaveImageAsync(IFormFile file, Guid imageId = default);
-        Task<ModelResult<object>> DeleteImageAsync(Guid imageId);
+        Task<ReadModelResult<byte[]>> GetImageAsync(Guid imageId);
+        Task<CreateModelResult<IFormFile>> SaveImageAsync(IFormFile file, Guid imageId = default);
+        Task<DeleteModelResult> DeleteImageAsync(Guid imageId);
     }
 }

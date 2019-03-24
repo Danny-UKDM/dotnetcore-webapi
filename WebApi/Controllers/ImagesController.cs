@@ -13,17 +13,19 @@ namespace WebApi.Controllers
     {
         private readonly IImageRepository _imageRepository;
 
-        public ImagesController(IImageRepository imageRepository)
-        {
+        public ImagesController(IImageRepository imageRepository) =>
             _imageRepository = imageRepository;
-        }
 
         //-- GET api/images/{imageId}
         [HttpGet("{imageId}")]
         [ProducesResponseType(200, Type = typeof(FileContentResult))]
+        [ProducesResponseType(400)]
         [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Get(Guid imageId)
         {
+            if (imageId == Guid.Empty)
+                return BadRequest();
+
             var modelResult = await _imageRepository.GetImageAsync(imageId);
 
             return modelResult.Result != ResultStatus.Failed
@@ -44,26 +46,33 @@ namespace WebApi.Controllers
                 : (IActionResult)BadRequest(modelResult.Reason);
         }
 
-        //-- PUT api/events/{imageId}
+        //-- PUT api/images/{imageId}
         [HttpPut("{imageId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Put(Guid imageId, IFormFile file)
         {
+            if (imageId == Guid.Empty)
+                return BadRequest();
+
             var modelResult = await _imageRepository.SaveImageAsync(file, imageId);
 
             return modelResult.Result != ResultStatus.Failed
                 ? NoContent()
-                : (IActionResult)NotFound();
+                : (IActionResult)NotFound(modelResult.Reason);
         }
 
         //-- DELETE api/images/{imageId}
         [HttpDelete("{imageId}")]
         [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Delete(Guid imageId)
         {
+            if (imageId == Guid.Empty)
+                return BadRequest();
+
             var modelResult = await _imageRepository.DeleteImageAsync(imageId);
 
             return modelResult.Result != ResultStatus.Failed
