@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +32,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
 
             var result = await _controller.Post(new Event());
 
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [Fact]

@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+      <LangVersion>latest</LangVersion>
+      <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <StartupObject>WebApi.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="3.3.32.1" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.31.23" />
     <PackageReference Include="Badger.Data" Version="1.0.38" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -17,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DatabaseInitialiser\DatabaseInitialiser.csproj" />
+    <ProjectReference Include="..\LocalstackInitialiser\LocalstackInitialiser.csproj" />
   </ItemGroup>
 
 </Project>

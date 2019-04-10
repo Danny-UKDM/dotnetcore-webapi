@@ -54,11 +54,11 @@ namespace WebApi.Controllers
         //-- POST api/events
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(400, Type = typeof(Event))]
         public async Task<IActionResult> Post([BindRequired, FromBody]Event @event)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(@event);
 
             using (var session = _sessionFactory.CreateCommandSession())
             {

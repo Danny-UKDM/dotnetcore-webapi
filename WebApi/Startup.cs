@@ -1,5 +1,6 @@
 ﻿using Badger.Data;
 using DatabaseInitialiser;
+using LocalstackInitialiser;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using WebApi.Data;
 
 namespace WebApi
 {
@@ -15,7 +17,8 @@ namespace WebApi
         public IConfiguration Configuration { get; }
 
         private readonly ILogger<Startup> _logger;
-        private Initialiser _initialiser;
+        private Initialiser _dbInitialiser;
+        private S3Initialiser _s3Initialiser;
 
         public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
@@ -31,11 +34,13 @@ namespace WebApi
                 config.WithConnectionString(Configuration.GetConnectionString("Content"))
                       .WithProviderFactory(NpgsqlFactory.Instance)));
 
+            services.AddTransient<IImageRepository, ImageRepository>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(x =>
                 {
-                    x.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info {Title = "Content API", Version = "v1"});
+                    x.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info { Title = "Content API", Version = "v1" });
                 });
 
             services.AddLogging();
@@ -69,17 +74,22 @@ namespace WebApi
 
         private void OnApplicationStarted()
         {
-            _logger.LogInformation("Creating and seeding database.");
+            _logger.LogInformation("Creating database.");
+            _dbInitialiser = new Initialiser(Configuration.GetConnectionString("Content"));
+            _dbInitialiser.Init();
 
-            _initialiser = new Initialiser(Configuration.GetConnectionString("Content"));
-            _initialiser.Init();
+            _logger.LogInformation("Creating s3 bucket.");
+            _s3Initialiser = new S3Initialiser(Configuration.GetSection("S3Buckets")["Images"]);
+            _s3Initialiser.Init();
         }
 
         private void OnApplicationStopped()
         {
             _logger.LogInformation("Tearing down database.");
+            _dbInitialiser.Dispose();
 
-            _initialiser.Dispose();
+            _logger.LogInformation("Destroying s3 bucket.");
+            _s3Initialiser.Dispose();
         }
     }
 }

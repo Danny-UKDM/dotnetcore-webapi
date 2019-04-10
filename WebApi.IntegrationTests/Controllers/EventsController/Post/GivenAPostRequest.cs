@@ -11,7 +11,7 @@ using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Post
 {
-    [Collection(nameof(EventsCollection))]
+    [Collection(nameof(TestCollection))]
     public class GivenAPostRequest : IClassFixture<GivenAPostRequest.PostRequest>
     {
         public class PostRequest : IAsyncLifetime
