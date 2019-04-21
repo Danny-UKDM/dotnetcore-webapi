@@ -6,12 +6,12 @@ namespace WebApi.Data.Commands
 {
     internal class UpdateVideoCommand : ICommand
     {
-        public Guid EventId { get; }
+        public Guid VideoId { get; }
         public Video Details { get; }
 
         public UpdateVideoCommand(Guid videoId, Video details)
         {
-            EventId = videoId;
+            VideoId = videoId;
             Details = details;
         }
         
@@ -23,7 +23,7 @@ update videos set
     videoName = @videoName,
     url = @url
 where videoId = @videoId")
-                .WithParameter("videoId", Details.VideoId)
+                .WithParameter("videoId", VideoId)
                 .WithParameter("partnerId", Details.PartnerId)
                 .WithParameter("videoName", Details.VideoName)
                 .WithParameter("url", Details.Url)

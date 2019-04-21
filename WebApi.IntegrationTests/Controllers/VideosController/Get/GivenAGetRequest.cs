@@ -8,7 +8,7 @@ using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
 using Xunit;
 
-namespace WebApi.IntegrationTests.Controllers.EventsController.Get
+namespace WebApi.IntegrationTests.Controllers.VideosController.Get
 {
     [Collection(nameof(TestCollection))]
     public class GivenAGetRequest : IClassFixture<GivenAGetRequest.GetRequest>
@@ -16,38 +16,37 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         public class GetRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            public Event Event { get; private set; }
+            public Video Video { get; private set; }
             public HttpResponseMessage Response { get; private set; }
 
             public GetRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Cool Test Video")
-                                    .InCity("Cool Test City")
-                                    .Build();
+                Video = VideoBuilder.CreateVideo("Cool Test Video").Build();
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new InsertEventCommand(Event));
+                    await session.ExecuteAsync(new InsertVideoCommand(Video));
                     session.Commit();
                 }
 
                 Response = await _factory.HttpClient
-                                         .GetAsync($"/api/events/{Event.EventId}");
+                                         .GetAsync($"/api/videos/{Video.VideoId}");
             }
 
             public async Task DisposeAsync()
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    await session.ExecuteAsync(new DeleteRowsByVideoIdCommand(new[] { Video.VideoId }));
                     session.Commit();
                 }
             }
         }
 
         private readonly GetRequest _fixture;
-        
+
         public GivenAGetRequest(GetRequest fixture) => _fixture = fixture;
 
         [Fact]
@@ -57,10 +56,10 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         [Fact]
         public void ThenTheExpectedResponseContentTypeWasReceived() =>
             _fixture.Response.Content.Headers.ContentType.Should()
-                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") {CharSet = "utf-8"});
+                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
         public async Task ThenTheResponseContentHasExpectedValue() =>
-            (await _fixture.Response.Content.ReadAsAsync<Event>()).Should().BeEquivalentTo(_fixture.Event);
+            (await _fixture.Response.Content.ReadAsAsync<Video>()).Should().BeEquivalentTo(_fixture.Video);
     }
 }

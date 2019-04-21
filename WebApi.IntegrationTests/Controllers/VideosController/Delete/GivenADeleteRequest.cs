@@ -7,7 +7,7 @@ using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
 using Xunit;
 
-namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
+namespace WebApi.IntegrationTests.Controllers.VideosController.Delete
 {
     [Collection(nameof(TestCollection))]
     public class GivenADeleteRequest : IClassFixture<GivenADeleteRequest.DeleteRequest>
@@ -15,31 +15,30 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
         public class DeleteRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            public Event Event { get; private set; }
+            public Video Video { get; private set; }
             public HttpResponseMessage Response { get; private set; }
 
             public DeleteRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Cool Removable Event")
-                                    .InCity("Cool Removable City")
-                                    .Build();
+                Video = VideoBuilder.CreateVideo("Cool Removable Video").Build();
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new InsertEventCommand(Event));
+                    await session.ExecuteAsync(new InsertVideoCommand(Video));
                     session.Commit();
                 }
 
                 Response = await _factory.HttpClient
-                                         .DeleteAsync($"/api/events/{Event.EventId}");
+                                         .DeleteAsync($"/api/videos/{Video.VideoId}");
             }
 
-            public async Task<Event> LoadStoredEvent()
+            public async Task<Video> LoadStoredEvent()
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(Event.EventId));
+                    return await session.ExecuteAsync(new GetVideoByIdQuery(Video.VideoId));
                 }
             }
 
@@ -47,14 +46,14 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    await session.ExecuteAsync(new DeleteRowsByVideoIdCommand(new[] { Video.VideoId }));
                     session.Commit();
                 }
             }
         }
 
         private readonly DeleteRequest _fixture;
-        
+
         public GivenADeleteRequest(DeleteRequest fixture) => _fixture = fixture;
 
         [Fact]
@@ -62,7 +61,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
             _fixture.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         [Fact]
-        public async Task ThenTheEventShouldNotExist() =>
+        public async Task ThenTheVideoShouldNotExist() =>
             (await _fixture.LoadStoredEvent()).Should().BeNull();
     }
 }

@@ -70,7 +70,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
                         }
                     }, parameterName, UpdatedFileName);
 
-                    Response = await _factory.Client.PutAsync($"/api/images/{_imageKey}", content);
+                    Response = await _factory.HttpClient.PutAsync($"/api/images/{_imageKey}", content);
                 }
 
                 _listObjectsResponse = await _factory.AmazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _factory.ImageBucketName });
