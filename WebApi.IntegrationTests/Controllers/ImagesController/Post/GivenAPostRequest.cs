@@ -46,7 +46,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Post
                             ContentType = new MediaTypeHeaderValue("image/gif")
                         }
                     }, parameterName, fileName);
-                    Response = await _factory.Client.PostAsync("/api/images", content);
+                    Response = await _factory.HttpClient.PostAsync("/api/images", content);
                 }
 
                 _listObjectsResponse = await _factory.AmazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _factory.ImageBucketName });

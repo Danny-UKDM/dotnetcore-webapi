@@ -8,7 +8,7 @@ using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
 using Xunit;
 
-namespace WebApi.IntegrationTests.Controllers.EventsController.Put
+namespace WebApi.IntegrationTests.Controllers.VideosController.Put
 {
     [Collection(nameof(TestCollection))]
     public class GivenAPutRequest : IClassFixture<GivenAPutRequest.PutRequest>
@@ -16,45 +16,45 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
         public class PutRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            private Event _originalEvent;
-            public Event UpdatedEvent { get; private set; }
+            private Video _originalVideo;
+            public Video UpdatedVideo { get; private set; }
             public HttpResponseMessage Response { get; private set; }
 
             public PutRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
-                _originalEvent = EventBuilder.CreateEvent("Cool OG Event")
-                                             .InCity("Cool OG City")
-                                             .Build();
+                _originalVideo = VideoBuilder.CreateVideo("Cool OG Video").Build();
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    session.Execute(new InsertEventCommand(_originalEvent));
+                    session.Execute(new InsertVideoCommand(_originalVideo));
                     session.Commit();
                 }
 
-                UpdatedEvent = EventBuilder.CreateEvent("Cool New Event")
-                                           .InCity("Cool New City")
+                UpdatedVideo = VideoBuilder.CreateVideo("Cool New Video")
+                                           .WithId(_originalVideo.VideoId)
                                            .Build();
-                var httpContent = new ObjectContent<Event>(UpdatedEvent, new JsonMediaTypeFormatter(), "application/json");
+
+                var httpContent = new ObjectContent<Video>(UpdatedVideo, new JsonMediaTypeFormatter(), "application/json");
 
                 Response = await _factory.HttpClient
-                                         .PutAsync($"/api/events/{_originalEvent.EventId}", httpContent);
+                                         .PutAsync($"/api/videos/{_originalVideo.VideoId}", httpContent);
             }
 
-            public async Task<Event> LoadStoredEvent()
+            public async Task<Video> LoadStoredVideo()
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(UpdatedEvent.EventId));
+                    return await session.ExecuteAsync(new GetVideoByIdQuery(UpdatedVideo.VideoId));
                 }
             }
 
             public async Task DisposeAsync()
-            {            
+            {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { _originalEvent.EventId, UpdatedEvent.EventId }));
+                    await session.ExecuteAsync(new DeleteRowsByVideoIdCommand(new[] { _originalVideo.VideoId, UpdatedVideo.VideoId }));
                     session.Commit();
                 }
             }
@@ -69,7 +69,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
             _fixture.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         [Fact]
-        public async Task ThenTheEventShouldBeUpdated() =>
-            (await _fixture.LoadStoredEvent()).Should().BeEquivalentTo(_fixture.UpdatedEvent);
+        public async Task ThenTheVideoShouldBeUpdated() =>
+            (await _fixture.LoadStoredVideo()).Should().BeEquivalentTo(_fixture.UpdatedVideo);
     }
 }

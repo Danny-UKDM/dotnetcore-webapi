@@ -43,7 +43,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Delete
 
                 await _factory.AmazonS3Client.PutObjectAsync(request);
 
-                Response = await _factory.Client.DeleteAsync($"/api/images/{_imageKey}");
+                Response = await _factory.HttpClient.DeleteAsync($"/api/images/{_imageKey}");
 
                 _listObjectsResponse = await _factory.AmazonS3Client.ListObjectsV2Async(new ListObjectsV2Request { BucketName = _factory.ImageBucketName });
             }
