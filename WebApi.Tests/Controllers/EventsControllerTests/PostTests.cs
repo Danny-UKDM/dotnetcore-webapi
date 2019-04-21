@@ -38,7 +38,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsCreatedWhenModelStateValid()
         {
-            var @event = EventBuilder.CreateEvent("Some Event").Build();
+            var @event = EventBuilder.CreateEvent("Some Video").Build();
 
             var result = await _controller.Post(@event);
 

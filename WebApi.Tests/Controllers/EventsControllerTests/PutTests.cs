@@ -50,7 +50,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsNoContentWhenUpdateSuccessful()
         {
-            var @event = EventBuilder.CreateEvent("Some Event").Build();
+            var @event = EventBuilder.CreateEvent("Some Video").Build();
             _session
                 .ExecuteAsync(Arg.Is<UpdateEventCommand>(c =>
                     c.EventId == @event.EventId &&

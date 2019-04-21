@@ -40,13 +40,13 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsOkWithEventsWhenSomeEvents()
         {
-            var one = EventBuilder.CreateEvent("Cool Event")
+            var one = EventBuilder.CreateEvent("Cool Video")
                                   .InCity("Cool City")
                                   .Build();
-            var two = EventBuilder.CreateEvent("Cooler Event")
+            var two = EventBuilder.CreateEvent("Cooler Video")
                                   .InCity("Cooler City")
                                   .Build();
-            var three = EventBuilder.CreateEvent("Coolest Event")
+            var three = EventBuilder.CreateEvent("Coolest Video")
                                     .InCity("Coolest City")
                                     .Build();
             _session
@@ -79,7 +79,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsOkWithEventWhenMatchingEventId()
         {
-            var @event = EventBuilder.CreateEvent("Some Event").Build();
+            var @event = EventBuilder.CreateEvent("Some Video").Build();
             _session
                 .ExecuteAsync(Arg.Is<GetEventByIdQuery>(q => q.EventId == @event.EventId))
                 .Returns(@event);
