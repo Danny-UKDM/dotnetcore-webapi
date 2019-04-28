@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Badger.Data;
@@ -11,26 +11,26 @@ using WebApi.Models;
 using WebApi.Tests.Helpers;
 using Xunit;
 
-namespace WebApi.Tests.Controllers.EventsControllerTests
+namespace WebApi.Tests.Controllers.VideosControllerTests
 {
     public class GetTests
     {
         private readonly IQuerySession _session;
-        private readonly EventsController _controller;
+        private readonly VideosController _controller;
 
         public GetTests()
         {
             var sessionFactory = Substitute.For<ISessionFactory>();
             _session = sessionFactory.CreateQuerySession();
-            _controller = new EventsController(sessionFactory);
+            _controller = new VideosController(sessionFactory);
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenNoEvents()
+        public async Task ReturnsNotFoundWhenNoVideos()
         {
             _session
-                .ExecuteAsync(Arg.Any<GetAllEventsQuery>())
-                .Returns(Enumerable.Empty<Event>());
+                .ExecuteAsync(Arg.Any<GetAllVideosQuery>())
+                .Returns(Enumerable.Empty<Video>());
 
             var result = await _controller.Get();
 
@@ -40,17 +40,11 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsOkWithEventsWhenSomeEvents()
         {
-            var one = EventBuilder.CreateEvent("Cool Video")
-                                  .InCity("Cool City")
-                                  .Build();
-            var two = EventBuilder.CreateEvent("Cooler Video")
-                                  .InCity("Cooler City")
-                                  .Build();
-            var three = EventBuilder.CreateEvent("Coolest Video")
-                                    .InCity("Coolest City")
-                                    .Build();
+            var one = VideoBuilder.CreateVideo("Cool Video").Build();
+            var two = VideoBuilder.CreateVideo("Cooler Video").Build();
+            var three = VideoBuilder.CreateVideo("Coolest Video").Build();
             _session
-                .ExecuteAsync(Arg.Any<GetAllEventsQuery>())
+                .ExecuteAsync(Arg.Any<GetAllVideosQuery>())
                 .Returns(new[]
                 {
                     one,
@@ -69,7 +63,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenNoMatchingEventId()
+        public async Task ReturnsNotFoundWhenNoMatchingVideoId()
         {
             var result = await _controller.Get(Guid.NewGuid());
 
@@ -77,17 +71,17 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         }
 
         [Fact]
-        public async Task ReturnsOkWithEventWhenMatchingEventId()
+        public async Task ReturnsOkWithVideoWhenMatchingVideoId()
         {
-            var @event = EventBuilder.CreateEvent("Some Video").Build();
+            var video = VideoBuilder.CreateVideo("Some Video").Build();
             _session
-                .ExecuteAsync(Arg.Is<GetEventByIdQuery>(q => q.EventId == @event.EventId))
-                .Returns(@event);
+                .ExecuteAsync(Arg.Is<GetVideoByIdQuery>(q => q.VideoId == video.VideoId))
+                .Returns(video);
 
-            var result = await _controller.Get(@event.EventId);
+            var result = await _controller.Get(video.VideoId);
 
             result.Should().BeOfType<OkObjectResult>().Which.Value
-                  .Should().BeEquivalentTo(@event);
+                  .Should().BeEquivalentTo(video);
         }
     }
 }

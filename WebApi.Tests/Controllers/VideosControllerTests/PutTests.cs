@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Badger.Data;
 using FluentAssertions;
@@ -10,39 +10,38 @@ using WebApi.Models;
 using WebApi.Tests.Helpers;
 using Xunit;
 
-namespace WebApi.Tests.Controllers.EventsControllerTests
+namespace WebApi.Tests.Controllers.VideosControllerTests
 {
     public class PutTests
     {
         private readonly ICommandSession _session;
-        private readonly EventsController _controller;
+        private readonly VideosController _controller;
 
         public PutTests()
         {
             var sessionFactory = Substitute.For<ISessionFactory>();
             _session = sessionFactory.CreateCommandSession();
-            _controller = new EventsController(sessionFactory);
+            _controller = new VideosController(sessionFactory);
         }
 
         [Fact]
         public async Task ReturnsBadRequestWhenModelErrors()
         {
-            _controller.ModelState.AddModelError(nameof(Event.Latitude), "Invalid Latitude");
-            _controller.ModelState.AddModelError(nameof(Event.Longitude), "Invalid Longitude");
+            _controller.ModelState.AddModelError(nameof(Video.VideoName), "");
 
-            var result = await _controller.Put(Guid.NewGuid(), new Event());
+            var result = await _controller.Put(Guid.NewGuid(), new Video());
 
             result.Should().BeOfType<BadRequestResult>();
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenEventMissing()
+        public async Task ReturnsNotFoundWhenVideoMissing()
         {
             _session
-                .ExecuteAsync(Arg.Any<UpdateEventCommand>())
+                .ExecuteAsync(Arg.Any<UpdateVideoCommand>())
                 .Returns(0);
             
-            var result = await _controller.Put(Guid.NewGuid(), new Event());
+            var result = await _controller.Put(Guid.NewGuid(), new Video());
 
             result.Should().BeOfType<NotFoundResult>();
         }
@@ -50,18 +49,18 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsNoContentWhenUpdateSuccessful()
         {
-            var @event = EventBuilder.CreateEvent("Some Video").Build();
+            var video = VideoBuilder.CreateVideo("Some Video").Build();
             _session
-                .ExecuteAsync(Arg.Is<UpdateEventCommand>(c =>
-                    c.EventId == @event.EventId &&
-                    c.Details == @event))
+                .ExecuteAsync(Arg.Is<UpdateVideoCommand>(c =>
+                    c.VideoId == video.VideoId &&
+                    c.Details == video))
                 .Returns(1);
 
-            var result = await _controller.Put(@event.EventId, @event);
+            var result = await _controller.Put(video.VideoId, video);
 
             Received.InOrder(() =>
             {
-                _session.Received(1).ExecuteAsync(Arg.Any<UpdateEventCommand>());
+                _session.Received(1).ExecuteAsync(Arg.Any<UpdateVideoCommand>());
                 _session.Received(1).Commit();
                 _session.Received(1).Dispose();
             });

@@ -10,27 +10,26 @@ using WebApi.Models;
 using WebApi.Tests.Helpers;
 using Xunit;
 
-namespace WebApi.Tests.Controllers.EventsControllerTests
+namespace WebApi.Tests.Controllers.VideosControllerTests
 {
     public class PostTests
     {
         private readonly ICommandSession _session;
-        private readonly EventsController _controller;
+        private readonly VideosController _controller;
 
         public PostTests()
         {
             var sessionFactory = Substitute.For<ISessionFactory>();
             _session = sessionFactory.CreateCommandSession();
-            _controller = new EventsController(sessionFactory);
+            _controller = new VideosController(sessionFactory);
         }
 
         [Fact]
         public async Task ReturnsBadRequestWhenModelErrors()
         {
-            _controller.ModelState.AddModelError(nameof(Event.Latitude), "Invalid Latitude");
-            _controller.ModelState.AddModelError(nameof(Event.Longitude), "Invalid Longitude");
+            _controller.ModelState.AddModelError(nameof(Video.VideoName), "");
 
-            var result = await _controller.Post(new Event());
+            var result = await _controller.Post(new Video());
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }
@@ -38,22 +37,22 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsCreatedWhenModelStateValid()
         {
-            var @event = EventBuilder.CreateEvent("Some Video").Build();
+            var video = VideoBuilder.CreateVideo("Some Video").Build();
 
-            var result = await _controller.Post(@event);
+            var result = await _controller.Post(video);
 
             Received.InOrder(() =>
             {
-                _session.Received(1).ExecuteAsync(Arg.Is<InsertEventCommand>(c => c.Event == @event));
+                _session.Received(1).ExecuteAsync(Arg.Is<InsertVideoCommand>(c => c.Video == video));
                 _session.Received(1).Commit();
                 _session.Received(1).Dispose();
             });
             result.Should().BeOfType<CreatedAtActionResult>().Which
                   .Should().BeEquivalentTo(new
                   {
-                      ActionName = nameof(EventsController.Get),
-                      RouteValues = new RouteValueDictionary {{"eventId", @event.EventId}},
-                      Value = @event
+                      ActionName = nameof(VideosController.Get),
+                      RouteValues = new RouteValueDictionary {{"videoId", video.VideoId}},
+                      Value = video
                   });
         }
     }

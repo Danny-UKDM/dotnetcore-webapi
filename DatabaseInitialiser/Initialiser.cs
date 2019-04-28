@@ -22,7 +22,7 @@ namespace DatabaseInitialiser
         public void Init()
         {
             CreateDatabase();
-            CreateTable();
+            CreateTables();
         }
 
         private void CreateDatabase()
@@ -40,7 +40,7 @@ namespace DatabaseInitialiser
             }
         }
 
-        private void CreateTable()
+        private void CreateTables()
         {
             try
             {
@@ -59,7 +59,16 @@ create table events
     country varchar(100) not null,
     latitude float8 not null,
     longitude float8 not null
-)");
+);
+
+create table videos
+(
+    id bigserial primary key,
+    videoId uuid not null,
+    partnerId uuid not null,
+    videoName varchar(100) not null,
+    url varchar(50) not null
+);");
                 }
             }
             catch (Exception ex)

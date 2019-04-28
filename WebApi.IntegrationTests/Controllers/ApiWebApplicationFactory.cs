@@ -10,11 +10,12 @@ namespace WebApi.IntegrationTests.Controllers
 {
     public class ApiWebApplicationFactory : WebApplicationFactory<Startup>
     {
-        public HttpClient Client { get; }
+        public HttpClient HttpClient { get; }
+        public AmazonS3Client AmazonS3Client { get; }
 
         public ApiWebApplicationFactory()
         {
-            Client = CreateClient(); // Ensures Server is started before any tests execute
+            HttpClient = CreateClient(); // Ensures Server is started before any tests execute
 
             SessionFactory = Badger.Data.SessionFactory.With(config =>
                 config.WithConnectionString(Configuration.GetConnectionString("Content"))
@@ -32,7 +33,6 @@ namespace WebApi.IntegrationTests.Controllers
 
         private IConfiguration Configuration => Server.Host.Services.GetRequiredService<IConfiguration>();
         public ISessionFactory SessionFactory { get; }
-        public AmazonS3Client AmazonS3Client { get; }
         public string ImageBucketName { get; }
     }
 }

@@ -41,7 +41,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
 
                 await _factory.AmazonS3Client.PutObjectAsync(request);
 
-                Response = await _factory.Client.GetAsync($"/api/images/{_imageKey}");
+                Response = await _factory.HttpClient.GetAsync($"/api/images/{_imageKey}");
             }
 
             public string StoredTestImage()
