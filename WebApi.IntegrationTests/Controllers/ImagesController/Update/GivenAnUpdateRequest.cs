@@ -44,8 +44,6 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
 
                 await _factory.AmazonS3Client.PutObjectAsync(request);
 
-
-
                 const string parameterName = "file";
 
                 using (var imageStream = GetImageStream(UpdatedFileName))

@@ -29,6 +29,12 @@ namespace WebApi.IntegrationTests.Helpers
             return this;
         }
 
+        public EventBuilder WithId(Guid id)
+        {
+            _event.EventId = id;
+            return this;
+        }
+
         public Event Build() => _event;
     }
 }
