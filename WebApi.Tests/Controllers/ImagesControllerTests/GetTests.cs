@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -12,44 +11,43 @@ namespace WebApi.Tests.Controllers.ImagesControllerTests
 {
     public class GetTests
     {
-        //private readonly ImagesController _controller;
-        //private readonly Guid _imageId;
-        //private readonly ReadModelResult<byte[]> _readModelResult;
+        private readonly ImagesController _controller;
+        private readonly Guid _imageId;
+        private readonly ReadModelResult _readModelResult;
 
-        //public GetTests()
-        //{
-        //    _imageId = Guid.NewGuid();
-        //    var imageRepository = Substitute.For<IImageRepository>();
-        //    imageRepository
-        //        .GetImageAsync(Guid.Empty)
-        //        .Returns(new ReadModelResult<byte[]>(ResultStatus.Failed));
+        public GetTests()
+        {
+            _imageId = Guid.NewGuid();
+            _readModelResult = new ReadModelResult(_imageId)
+            {
+                Locations = new[] { "https://someimagelocation.com" }
+            };
 
-        //    _readModelResult = new ReadModelResult<byte[]>(_imageId)
-        //    {
-        //        ContentType = "image/gif",
-        //        Location = new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, 0x80, 0x0, 0x0, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b }
-        //    };
-        //    imageRepository
-        //        .GetImageAsync(_imageId)
-        //        .Returns(_readModelResult);
+            var imageRepository = Substitute.For<IImageRepository>();
+            imageRepository
+                .GetImageAsync(Guid.Empty)
+                .Returns(new ReadModelResult(ResultStatus.Failed));
+            imageRepository
+                .GetImageAsync(_imageId)
+                .Returns(_readModelResult);
 
-        //    _controller = new ImagesController(imageRepository);
-        //}
+            _controller = new ImagesController(imageRepository);
+        }
 
-        //[Fact]
-        //public async Task ReturnsNotFoundWhenIdIsMissing()
-        //{
-        //    var result = await _controller.Get(Guid.Empty);
-        //    result.Should().BeOfType<NotFoundObjectResult>();
-        //}
+        [Fact]
+        public void ReturnsNotFoundWhenIdIsMissing()
+        {
+            var result = _controller.Get(Guid.Empty);
+            result.Should().BeOfType<NotFoundObjectResult>();
+        }
 
-        //[Fact]
-        //public async Task ReturnsOkWithImageWhenMatchingImageId()
-        //{
-        //    var result = await _controller.Get(_imageId);
+        [Fact]
+        public void ReturnsOkWithImageWhenMatchingImageId()
+        {
+            var result = _controller.Get(_imageId);
 
-        //    result.Should().BeOfType<FileContentResult>().Which.FileContents
-        //          .Should().BeEquivalentTo(_readModelResult.Location);
-        //}
+            result.Should().BeOfType<OkObjectResult>().Which.Value
+                  .Should().BeEquivalentTo(_readModelResult.Locations);
+        }
     }
 }
