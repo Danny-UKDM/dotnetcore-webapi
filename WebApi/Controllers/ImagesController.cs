@@ -20,12 +20,12 @@ namespace WebApi.Controllers
         [HttpGet("{imageId}")]
         [ProducesResponseType(200, Type = typeof(FileContentResult))]
         [ProducesResponseType(404, Type = typeof(string))]
-        public async Task<IActionResult> Get(Guid imageId)
+        public IActionResult Get(Guid imageId)
         {
-            var modelResult = await _imageRepository.GetImageAsync(imageId);
+            var modelResult = _imageRepository.GetImageAsync(imageId);
 
             return modelResult.Result != ResultStatus.Failed
-                ? File(modelResult.Data, modelResult.ContentType)
+                ? Ok(modelResult.Locations)
                 : (IActionResult)NotFound(modelResult.Reason);
         }
 

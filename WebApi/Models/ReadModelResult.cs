@@ -1,26 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace WebApi.Models
 {
-    public class ReadModelResult<T> where T : class
+    public class ReadModelResult
     {
         public ReadModelResult(Guid imageId)
         {
-            Data = default;
             ImageId = imageId;
             Result = ResultStatus.Success;
         }
 
         public ReadModelResult(ResultStatus result, string reason = "")
         {
-            Data = default;
             Result = result;
             Reason = reason;
         }
 
-        public T Data { get; set; }
+        [JsonProperty]
+        public IEnumerable<string> Locations { get; set; }
         public Guid ImageId { get; internal set; }
-        public string ContentType { get; set; }
         public ResultStatus Result { get; }
         public string Reason { get; }
     }

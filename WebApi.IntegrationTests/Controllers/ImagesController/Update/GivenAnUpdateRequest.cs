@@ -22,7 +22,6 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
             private const string UpdatedFileName = "1x1.png";
             private ListObjectsV2Response _listObjectsResponse;
             public HttpResponseMessage Response { get; private set; }
-            public int ImageCount => _listObjectsResponse.KeyCount;
 
             public UpdateRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
@@ -66,7 +65,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
                     {
                         Headers =
                         {
-                            ContentType = new MediaTypeHeaderValue("image/gif")
+                            ContentType = new MediaTypeHeaderValue("image/png")
                         }
                     }, parameterName, UpdatedFileName);
 
@@ -78,6 +77,10 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
 
             private static FileStream GetImageStream(string fileName) =>
                 File.OpenRead($"../../../Controllers/ImagesController/Images/{fileName}");
+
+            public async Task<GetObjectResponse> GetUpdatedImage() =>
+                await _factory.AmazonS3Client.GetObjectAsync(_factory.ImageBucketName, _imageKey.ToString());
+
 
             public async Task DisposeAsync()
             {
@@ -98,7 +101,7 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Update
             _fixture.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         [Fact]
-        public void TheTheExistingImageShouldBeReplaced() =>
-            _fixture.ImageCount.Should().Be(1);
+        public async Task TheTheExistingImageShouldBeReplaced() =>
+            (await _fixture.GetUpdatedImage()).Headers.ContentType.Should().Be("image/png");
     }
 }
