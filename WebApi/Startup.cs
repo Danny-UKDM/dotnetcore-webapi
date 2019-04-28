@@ -60,7 +60,7 @@ namespace WebApi
             }
 
             lifetime.ApplicationStarted.Register(OnApplicationStarted);
-            lifetime.ApplicationStopping.Register(OnApplicationStopped);
+            //lifetime.ApplicationStopping.Register(OnApplicationStopped);
 
             app.UseHttpsRedirection();
             app.UseMvc();
@@ -83,13 +83,13 @@ namespace WebApi
             _s3Initialiser.Init();
         }
 
-        private void OnApplicationStopped()
-        {
-            _logger.LogInformation("Tearing down database.");
-            _dbInitialiser.Dispose();
+        //private void OnApplicationStopped()
+        //{
+        //    _logger.LogInformation("Tearing down database.");
+        //    _dbInitialiser.Dispose();
 
-            _logger.LogInformation("Destroying s3 bucket.");
-            _s3Initialiser.Dispose();
-        }
+        //    _logger.LogInformation("Destroying s3 bucket.");
+        //    _s3Initialiser.Dispose();
+        //}
     }
 }
