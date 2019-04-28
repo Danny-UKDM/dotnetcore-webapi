@@ -35,6 +35,9 @@ namespace WebApi.Controllers
         [ProducesResponseType(400, Type = typeof(string))]
         public async Task<IActionResult> Post(IFormFile file)
         {
+            if (file == null)
+                return BadRequest("File is null");
+
             var modelResult = await _imageRepository.SaveImageAsync(file);
 
             return modelResult.Result != ResultStatus.Failed
@@ -49,8 +52,8 @@ namespace WebApi.Controllers
         [ProducesResponseType(404, Type = typeof(string))]
         public async Task<IActionResult> Put(Guid imageId, IFormFile file)
         {
-            if (imageId == Guid.Empty)
-                return BadRequest();
+            if (imageId == Guid.Empty || file == null)
+                return BadRequest("Bad imageId or file");
 
             var modelResult = await _imageRepository.SaveImageAsync(file, imageId);
 
