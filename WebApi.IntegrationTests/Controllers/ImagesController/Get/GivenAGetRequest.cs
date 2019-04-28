@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Amazon.S3.Model;
 using FluentAssertions;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
@@ -44,20 +45,27 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
                 Response = await _factory.HttpClient.GetAsync($"/api/images/{_imageKey}");
             }
 
-            public string StoredTestImage()
-            {
-                string fileString;
-                using (var imageStream = GetImageStream(FileName))
-                {
-                    var reader = new StreamReader(imageStream);
-                    fileString = reader.ReadToEnd();
-                }
-
-                return fileString;
-            }
-
             private static FileStream GetImageStream(string fileName) =>
                 File.OpenRead($"../../../Controllers/ImagesController/Images/{fileName}");
+
+            public string GetTestImageLocation()
+            {
+                var getPreSignedUrlRequest = new GetPreSignedUrlRequest
+                {
+                    BucketName = _factory.ImageBucketName,
+                    Key = _imageKey.ToString(),
+                    Expires = DateTime.MaxValue
+                };
+
+                var preSignedUrl = _factory.AmazonS3Client.GetPreSignedURL(getPreSignedUrlRequest);
+
+                var imageLocation = new UriBuilder(preSignedUrl)
+                {
+                    Scheme = HttpScheme.Http.ToString()
+                };
+
+                return imageLocation.Uri.AbsoluteUri;
+            }
 
             public async Task DisposeAsync()
             {
@@ -85,11 +93,10 @@ namespace WebApi.IntegrationTests.Controllers.ImagesController.Get
         [Fact]
         public void ThenTheExpectedResponseContentTypeWasReceived() =>
             _fixture.Response.Content.Headers.ContentType.Should()
-                    .BeEquivalentTo(new MediaTypeHeaderValue("image/gif"));
+                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
         public async Task ThenTheResponseContentHasExpectedValue() =>
-            (await _fixture.Response.Content.ReadAsStringAsync()).Should().Be(_fixture.StoredTestImage());
-
+            (await _fixture.Response.Content.ReadAsStringAsync()).Should().Contain(_fixture.GetTestImageLocation());
     }
 }

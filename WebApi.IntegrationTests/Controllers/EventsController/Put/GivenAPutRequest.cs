@@ -35,7 +35,9 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
 
                 UpdatedEvent = EventBuilder.CreateEvent("Cool New Event")
                                            .InCity("Cool New City")
+                                           .WithId(_originalEvent.EventId)
                                            .Build();
+
                 var httpContent = new ObjectContent<Event>(UpdatedEvent, new JsonMediaTypeFormatter(), "application/json");
 
                 Response = await _factory.HttpClient
@@ -51,7 +53,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
             }
 
             public async Task DisposeAsync()
-            {            
+            {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
                     await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { _originalEvent.EventId, UpdatedEvent.EventId }));

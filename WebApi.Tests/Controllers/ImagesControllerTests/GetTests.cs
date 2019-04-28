@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -14,21 +13,20 @@ namespace WebApi.Tests.Controllers.ImagesControllerTests
     {
         private readonly ImagesController _controller;
         private readonly Guid _imageId;
-        private readonly ReadModelResult<byte[]> _readModelResult;
+        private readonly ReadModelResult _readModelResult;
 
         public GetTests()
         {
             _imageId = Guid.NewGuid();
+            _readModelResult = new ReadModelResult(_imageId)
+            {
+                Locations = new[] { "https://someimagelocation.com" }
+            };
+
             var imageRepository = Substitute.For<IImageRepository>();
             imageRepository
                 .GetImageAsync(Guid.Empty)
-                .Returns(new ReadModelResult<byte[]>(ResultStatus.Failed));
-
-            _readModelResult = new ReadModelResult<byte[]>(_imageId)
-            {
-                ContentType = "image/gif",
-                Data = new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, 0x80, 0x0, 0x0, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b }
-            };
+                .Returns(new ReadModelResult(ResultStatus.Failed));
             imageRepository
                 .GetImageAsync(_imageId)
                 .Returns(_readModelResult);
@@ -37,19 +35,19 @@ namespace WebApi.Tests.Controllers.ImagesControllerTests
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenIdIsMissing()
+        public void ReturnsNotFoundWhenIdIsMissing()
         {
-            var result = await _controller.Get(Guid.Empty);
+            var result = _controller.Get(Guid.Empty);
             result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         [Fact]
-        public async Task ReturnsOkWithImageWhenMatchingImageId()
+        public void ReturnsOkWithImageWhenMatchingImageId()
         {
-            var result = await _controller.Get(_imageId);
+            var result = _controller.Get(_imageId);
 
-            result.Should().BeOfType<FileContentResult>().Which.FileContents
-                  .Should().BeEquivalentTo(_readModelResult.Data);
+            result.Should().BeOfType<OkObjectResult>().Which.Value
+                  .Should().BeEquivalentTo(_readModelResult.Locations);
         }
     }
 }

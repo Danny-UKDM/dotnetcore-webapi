@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Configuration;
 using WebApi.Models;
 
@@ -26,35 +27,34 @@ namespace WebApi.Data
             _amazonS3Client = new AmazonS3Client(amazonS3Config);
         }
 
-        public async Task<ReadModelResult<byte[]>> GetImageAsync(Guid imageId)
+        public ReadModelResult GetImageAsync(Guid imageId)
         {
-            var modelResult = ValidateReadRequest(imageId);
+            if (imageId == Guid.Empty)
+                return new ReadModelResult(ResultStatus.Failed, "ImageId is not valid.");
 
-            if (modelResult.Result == ResultStatus.Failed)
-                return modelResult;
+            var modelResult = new ReadModelResult(imageId);
 
             try
             {
-                var request = new GetObjectRequest
+                var getPreSignedUrlRequest = new GetPreSignedUrlRequest
                 {
                     BucketName = _configuration.GetSection("S3Buckets")["Images"],
-                    Key = imageId.ToString()
+                    Key = imageId.ToString(),
+                    Expires = DateTime.MaxValue
                 };
 
-                var getObjectResponse = await _amazonS3Client.GetObjectAsync(request);
-                modelResult.ContentType = getObjectResponse.Headers.ContentType;
+                var preSignedUrl = _amazonS3Client.GetPreSignedURL(getPreSignedUrlRequest);
 
-                using (var responseStream = getObjectResponse.ResponseStream)
-                using (var reader = new StreamReader(responseStream))
-                using (var memoryStream = new MemoryStream())
+                var imageLocation = new UriBuilder(preSignedUrl)
                 {
-                    reader.BaseStream.CopyTo(memoryStream);
-                    modelResult.Data = memoryStream.ToArray();
-                }
+                    Scheme = HttpScheme.Http.ToString()
+                };
+
+                modelResult.Locations = new[] { imageLocation.Uri.AbsoluteUri };
             }
             catch (Exception ex)
             {
-                return new ReadModelResult<byte[]>(ResultStatus.Failed, ex.Message);
+                return new ReadModelResult(ResultStatus.Failed, ex.Message);
             }
 
             return modelResult;
@@ -73,22 +73,23 @@ namespace WebApi.Data
 
             try
             {
-                string imageString;
-                using (var reader = new StreamReader(modelResult.Data.OpenReadStream()))
+                var dataLength = (int)modelResult.Data.Length;
+                var fileBytes = new byte[dataLength];
+                modelResult.Data.OpenReadStream().Read(fileBytes, 0, dataLength);
+
+                using (var stream = new MemoryStream(fileBytes))
                 {
-                    imageString = await reader.ReadToEndAsync();
+                    var request = new PutObjectRequest
+                    {
+                        BucketName = _configuration.GetSection("S3Buckets")["Images"],
+                        Key = modelResult.ImageId.ToString(),
+                        InputStream = stream,
+                        ContentType = modelResult.Data.ContentType,
+                        CannedACL = S3CannedACL.PublicRead
+                    };
+
+                    await _amazonS3Client.PutObjectAsync(request);
                 }
-
-                var request = new PutObjectRequest
-                {
-                    BucketName = _configuration.GetSection("S3Buckets")["Images"],
-                    Key = modelResult.ImageId.ToString(),
-                    ContentBody = imageString,
-                    ContentType = file.ContentType
-                };
-
-                await _amazonS3Client.PutObjectAsync(request);
-
             }
             catch (Exception ex)
             {
@@ -100,10 +101,10 @@ namespace WebApi.Data
 
         public async Task<DeleteModelResult> DeleteImageAsync(Guid imageId)
         {
-            var modelResult = ValidateDeleteRequest(imageId);
+            if (imageId == Guid.Empty)
+                return new DeleteModelResult(ResultStatus.Failed, "ImageId is not valid.");
 
-            if (modelResult.Result == ResultStatus.Failed)
-                return modelResult;
+            var modelResult = new DeleteModelResult(imageId);
 
             try
             {
@@ -137,20 +138,6 @@ namespace WebApi.Data
             return new CreateModelResult<IFormFile>(file);
         }
 
-        private static ReadModelResult<byte[]> ValidateReadRequest(Guid imageId)
-        {
-            return imageId != Guid.Empty
-                ? new ReadModelResult<byte[]>(imageId)
-                : new ReadModelResult<byte[]>(ResultStatus.Failed, "ImageId is not valid.");
-        }
-
-        private static DeleteModelResult ValidateDeleteRequest(Guid imageId)
-        {
-            return imageId != Guid.Empty
-                ? new DeleteModelResult(imageId)
-                : new DeleteModelResult(ResultStatus.Failed, "ImageId is not valid.");
-        }
-
         private static bool IsValidType(string contentType)
         {
             switch (contentType)
@@ -158,6 +145,8 @@ namespace WebApi.Data
                 case "image/png":
                 case "image/gif":
                 case "image/jpeg":
+                case "image/bmp":
+                case "image/tiff":
                     return true;
                 default:
                     return false;

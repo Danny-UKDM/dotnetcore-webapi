@@ -19,7 +19,6 @@ namespace WebApi.Data.Commands
             builder
                 .WithSql(@"
 update events set
-    eventId = @eventId,
     partnerId = @partnerId,
     eventName = @eventName,
     addressLine1 = @addressLine1,
@@ -28,9 +27,8 @@ update events set
     country = @country,
     latitude = @latitude,
     longitude = @longitude
-where eventId = @existingEventId")
-                .WithParameter("existingEventId", EventId)
-                .WithParameter("eventId", Details.EventId)
+where eventId = @eventId")
+                .WithParameter("eventId", EventId)
                 .WithParameter("partnerId", Details.PartnerId)
                 .WithParameter("eventName", Details.EventName)
                 .WithParameter("addressLine1", Details.AddressLine1)
