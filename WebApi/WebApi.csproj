@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-      <LangVersion>latest</LangVersion>
-      <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <LangVersion>latest</LangVersion>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <StartupObject>WebApi.Program</StartupObject>
   </PropertyGroup>
 
