@@ -17,7 +17,7 @@ namespace WebApi.Controllers
     {
         private readonly ISessionFactory _sessionFactory;
 
-        public EventsController(ISessionFactory sessionFactory) => 
+        public EventsController(ISessionFactory sessionFactory) =>
             _sessionFactory = sessionFactory;
 
         //-- GET api/events
@@ -66,18 +66,18 @@ namespace WebApi.Controllers
                 session.Commit();
             }
 
-            return CreatedAtAction(nameof(Get), new {eventId = @event.EventId}, @event);
+            return CreatedAtAction(nameof(Get), new { eventId = @event.EventId }, @event);
         }
 
         //-- PUT api/events/{eventId}
         [HttpPut("{eventId}")]
         [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(400, Type = typeof(Event))]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Put(Guid eventId, [BindRequired, FromBody]Event @event)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(@event);
 
             using (var session = _sessionFactory.CreateCommandSession())
             {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Badger.Data;
 using FluentAssertions;
@@ -32,7 +32,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
 
             var result = await _controller.Put(Guid.NewGuid(), new Event());
 
-            result.Should().BeOfType<BadRequestResult>();
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
         [Fact]

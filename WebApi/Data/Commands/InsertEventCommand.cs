@@ -7,7 +7,8 @@ namespace WebApi.Data.Commands
     {
         public Event Event { get; }
 
-        public InsertEventCommand(Event @event) => Event = @event;
+        public InsertEventCommand(Event @event) =>
+            Event = @event;
 
         public IPreparedCommand Prepare(ICommandBuilder builder) =>
             builder
