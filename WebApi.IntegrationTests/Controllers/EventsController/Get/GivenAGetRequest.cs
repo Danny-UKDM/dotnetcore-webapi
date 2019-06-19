@@ -33,7 +33,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
                 }
 
                 Response = await _factory.HttpClient
-                                         .GetAsync($"/api/events/{Event.EventId}");
+                                         .GetAsync($"/api/events/byevent/{Event.EventId}");
             }
 
             public async Task DisposeAsync()

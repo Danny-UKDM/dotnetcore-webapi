@@ -30,6 +30,12 @@ namespace WebApi.Tests.Helpers
             return this;
         }
 
+        public EventBuilder WithPartnerId(Guid partnerId)
+        {
+            _event.PartnerId = partnerId;
+            return this;
+        }
+
         public Event Build() => _event;
     }
 }
