@@ -20,11 +20,11 @@ namespace WebApi.Controllers
         public EventsController(ISessionFactory sessionFactory) =>
             _sessionFactory = sessionFactory;
 
-        //-- GET api/events
-        [HttpGet]
+        //-- GET api/Events/All
+        [HttpGet("All")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Event>))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAll()
         {
             using (var session = _sessionFactory.CreateQuerySession())
             {
@@ -35,8 +35,8 @@ namespace WebApi.Controllers
             }
         }
 
-        //-- GET api/events/{eventId}
-        [HttpGet("{eventId}")]
+        //-- GET api/Events/ByEvent/{eventId}
+        [HttpGet("ByEvent/{eventId}")]
         [ProducesResponseType(200, Type = typeof(Event))]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Get(Guid eventId)
@@ -51,7 +51,23 @@ namespace WebApi.Controllers
             }
         }
 
-        //-- POST api/events
+        //-- GET api/Events/ByPartner/{partnerId}
+        [HttpGet("ByPartner/{partnerId}")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Event>))]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetAllForPartner(Guid partnerId)
+        {
+            using (var session = _sessionFactory.CreateQuerySession())
+            {
+                var events = await session.ExecuteAsync(new GetEventsByPartnerIdQuery(partnerId));
+
+                return events.Any()
+                    ? Ok(events)
+                    : (IActionResult)NotFound();
+            }
+        }
+
+        //-- POST api/Events
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400, Type = typeof(Event))]
@@ -69,7 +85,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(Get), new { eventId = @event.EventId }, @event);
         }
 
-        //-- PUT api/events/{eventId}
+        //-- PUT api/Events/{eventId}
         [HttpPut("{eventId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400, Type = typeof(Event))]
@@ -90,7 +106,7 @@ namespace WebApi.Controllers
             }
         }
 
-        //-- DELETE api/events/{eventId}
+        //-- DELETE api/Events/{eventId}
         [HttpDelete("{eventId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
