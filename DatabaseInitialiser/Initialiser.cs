@@ -58,7 +58,9 @@ create table events
     city varchar(100) not null,
     country varchar(100) not null,
     latitude float8 not null,
-    longitude float8 not null
+    longitude float8 not null,
+    createdAt timestamp not null,
+    occursOn timestamp not null
 );
 
 create table videos
@@ -73,7 +75,7 @@ create table videos
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error creating table: {ex.Message}");
+                Console.WriteLine($"Error creating tables: {ex.Message}");
             }
         }
 

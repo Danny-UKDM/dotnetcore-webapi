@@ -19,14 +19,14 @@ namespace WebApi.Data.Commands
             builder
                 .WithSql(@"
 update events set
-    partnerId = @partnerId,
     eventName = @eventName,
     addressLine1 = @addressLine1,
     postalCode = @postalCode,
     city = @city,
     country = @country,
     latitude = @latitude,
-    longitude = @longitude
+    longitude = @longitude,
+    occursOn = @occursOn
 where eventId = @eventId")
                 .WithParameter("eventId", EventId)
                 .WithParameter("partnerId", Details.PartnerId)
@@ -37,6 +37,7 @@ where eventId = @eventId")
                 .WithParameter("country", Details.Country)
                 .WithParameter("latitude", Details.Latitude)
                 .WithParameter("longitude", Details.Longitude)
+                .WithParameter("occursOn", Details.OccursOn)
                 .Build();
     }
 }

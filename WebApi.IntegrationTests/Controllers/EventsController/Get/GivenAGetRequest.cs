@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -40,14 +41,14 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { Event.EventId }));
                     session.Commit();
                 }
             }
         }
 
         private readonly GetRequest _fixture;
-        
+
         public GivenAGetRequest(GetRequest fixture) => _fixture = fixture;
 
         [Fact]
@@ -57,10 +58,13 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         [Fact]
         public void ThenTheExpectedResponseContentTypeWasReceived() =>
             _fixture.Response.Content.Headers.ContentType.Should()
-                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") {CharSet = "utf-8"});
+                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
         public async Task ThenTheResponseContentHasExpectedValue() =>
-            (await _fixture.Response.Content.ReadAsAsync<Event>()).Should().BeEquivalentTo(_fixture.Event);
+            (await _fixture.Response.Content.ReadAsAsync<Event>()).Should()
+                                                                  .BeEquivalentTo(_fixture.Event, o =>
+                                                                       o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
+                                                                        .WhenTypeIs<DateTime>());
     }
 }

@@ -24,7 +24,9 @@ select
     city,
     country,
     latitude,
-    longitude
+    longitude,
+    createdAt,
+    occursOn
 from events
 where partnerId = @partnerId")
                 .WithParameter("partnerId", PartnerId)
@@ -38,7 +40,9 @@ where partnerId = @partnerId")
                     City = r.Get<string>("city"),
                     Country = r.Get<string>("country"),
                     Latitude = r.Get<double>("latitude"),
-                    Longitude = r.Get<double>("longitude")
+                    Longitude = r.Get<double>("longitude"),
+                    CreatedAt = r.Get<DateTime>("createdAt"),
+                    OccursOn = r.Get<DateTime>("occursOn")
                 })
                 .Build();
     }

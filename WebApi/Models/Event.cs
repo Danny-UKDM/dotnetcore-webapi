@@ -31,5 +31,11 @@ namespace WebApi.Models
 
         [Required] [Range(-180, 180, ErrorMessage = "Invalid Longitude.")]
         public double Longitude { get; set; }
+
+        [Required]
+        public DateTime OccursOn { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
+
 }

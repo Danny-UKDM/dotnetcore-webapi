@@ -13,5 +13,7 @@ namespace DatabaseInitialiser.Tests
         public string Country { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public DateTime OccursOn { get; set; }
+        public DateTime CreatedAt => DateTime.UtcNow;
     }
 }

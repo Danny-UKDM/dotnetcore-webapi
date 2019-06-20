@@ -42,9 +42,9 @@ namespace DatabaseInitialiser.Tests
 
         private void InsertTestData()
         {
-            var event1 = new EventBuilder().CreateEvent("Cool Event").Build();
-            var event2 = new EventBuilder().CreateEvent("Cooler Event").Build();
-            var event3 = new EventBuilder().CreateEvent("Coolest Event").Build();
+            var event1 = EventBuilder.CreateEvent("Cool Event").Build();
+            var event2 = EventBuilder.CreateEvent("Cooler Event").Build();
+            var event3 = EventBuilder.CreateEvent("Coolest Event").Build();
 
             const string insertSql = @"
 insert into events (
@@ -56,7 +56,9 @@ insert into events (
     city,
     country,
     latitude,
-    longitude
+    longitude,
+    createdAt,
+    occursOn
 ) values (
     @eventId,
     @partnerId,
@@ -66,7 +68,9 @@ insert into events (
     @city,
     @country,
     @latitude,
-    @longitude
+    @longitude,
+    @createdAt,
+    @occursOn
 )";
 
             using (var conn = new NpgsqlConnection(_connectionString))

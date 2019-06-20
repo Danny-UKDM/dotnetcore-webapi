@@ -6,27 +6,23 @@ namespace DatabaseInitialiser.Tests
     {
         private readonly Event _event;
 
-        public EventBuilder()
-        {
+        private EventBuilder(string eventName) =>
             _event = new Event
             {
                 EventId = Guid.NewGuid(),
                 PartnerId = Guid.NewGuid(),
-                EventName = "Some Event Name",
+                EventName = eventName,
                 AddressLine1 = "Some Address",
                 PostalCode = "NG71FB",
                 City = "Some City",
                 Country = "Some Country",
                 Latitude = new Random().Next(-90, 90),
-                Longitude = new Random().Next(-180, 180)
+                Longitude = new Random().Next(-180, 180),
+                OccursOn = DateTime.UtcNow.AddDays(new Random().Next(365))
             };
-        }
 
-        public EventBuilder CreateEvent(string eventName)
-        {
-            _event.EventName = eventName;
-            return this;
-        }
+        public static EventBuilder CreateEvent(string eventName) =>
+            new EventBuilder(eventName);
 
         public EventBuilder InCity(string city)
         {
@@ -34,9 +30,12 @@ namespace DatabaseInitialiser.Tests
             return this;
         }
 
-        public Event Build()
+        public EventBuilder WithPartnerId(Guid partnerId)
         {
-            return _event;
+            _event.PartnerId = partnerId;
+            return this;
         }
+
+        public Event Build() => _event;
     }
 }

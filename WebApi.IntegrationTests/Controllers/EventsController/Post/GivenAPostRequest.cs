@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -27,7 +28,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
                 Event = EventBuilder.CreateEvent("Nice Test Video")
                                     .InCity("Nice Test City City")
                                     .Build();
-                
+
                 var httpContent = new ObjectContent<Event>(Event, new JsonMediaTypeFormatter(), "application/json");
 
                 Response = await _factory.HttpClient
@@ -46,7 +47,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { Event.EventId }));
                     session.Commit();
                 }
             }
@@ -63,11 +64,13 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
         [Fact]
         public void ThenTheExpectedResponseContentTypeWasReceived() =>
             _fixture.Response.Content.Headers.ContentType.Should()
-                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") {CharSet = "utf-8"});
+                    .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
         public async Task ThenTheEventShouldBeStored() =>
-            (await _fixture.LoadStoredEvent()).Should().BeEquivalentTo(_fixture.Event);
-
+            (await _fixture.LoadStoredEvent()).Should()
+                                              .BeEquivalentTo(_fixture.Event, o =>
+                                                   o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
+                                                    .WhenTypeIs<DateTime>());
     }
 }
