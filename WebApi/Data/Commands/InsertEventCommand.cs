@@ -22,7 +22,9 @@ insert into events (
     city,
     country,
     latitude,
-    longitude
+    longitude,
+    createdAt,
+    occursOn
  ) values (
     @eventId,
     @partnerId,
@@ -32,7 +34,9 @@ insert into events (
     @city,
     @country,
     @latitude,
-    @longitude
+    @longitude,
+    @createdAt,
+    @occursOn
  )")
                 .WithParameter("eventId", Event.EventId)
                 .WithParameter("partnerId", Event.PartnerId)
@@ -43,6 +47,8 @@ insert into events (
                 .WithParameter("country", Event.Country)
                 .WithParameter("latitude", Event.Latitude)
                 .WithParameter("longitude", Event.Longitude)
+                .WithParameter("createdAt", Event.CreatedAt)
+                .WithParameter("occursOn", Event.OccursOn)
                 .Build();
     }
 }

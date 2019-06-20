@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Threading.Tasks;
@@ -33,10 +34,9 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
                     session.Commit();
                 }
 
-                UpdatedEvent = EventBuilder.CreateEvent("Cool New Event")
-                                           .InCity("Cool New City")
-                                           .WithId(_originalEvent.EventId)
-                                           .Build();
+                UpdatedEvent = _originalEvent;
+                UpdatedEvent.EventName = "Cool New Event";
+                UpdatedEvent.City = "Cool New City";
 
                 var httpContent = new ObjectContent<Event>(UpdatedEvent, new JsonMediaTypeFormatter(), "application/json");
 
@@ -48,7 +48,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(UpdatedEvent.EventId));
+                    return await session.ExecuteAsync(new GetEventByIdQuery(_originalEvent.EventId));
                 }
             }
 
@@ -72,6 +72,9 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
 
         [Fact]
         public async Task ThenTheEventShouldBeUpdated() =>
-            (await _fixture.LoadStoredEvent()).Should().BeEquivalentTo(_fixture.UpdatedEvent);
+            (await _fixture.LoadStoredEvent()).Should()
+                                              .BeEquivalentTo(_fixture.UpdatedEvent, o => 
+                                                   o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
+                                                    .WhenTypeIs<DateTime>());
     }
 }

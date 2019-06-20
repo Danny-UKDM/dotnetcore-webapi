@@ -18,7 +18,9 @@ namespace WebApi.Tests.Helpers
                 City = "Some City",
                 Country = "Some Country",
                 Latitude = new Random().Next(-90, 90),
-                Longitude = new Random().Next(-180, 180)
+                Longitude = new Random().Next(-180, 180),
+                OccursOn = DateTime.UtcNow.AddDays(new Random().Next(365)),
+                CreatedAt = DateTime.UtcNow.AddDays(new Random().Next(-365, 0))
             };
 
         public static EventBuilder CreateEvent(string eventName) =>

@@ -18,10 +18,13 @@ namespace WebApi.IntegrationTests.Helpers
                 City = "Some City",
                 Country = "Some Country",
                 Latitude = new Random().Next(-90, 90),
-                Longitude = new Random().Next(-180, 180)
+                Longitude = new Random().Next(-180, 180),
+                OccursOn = DateTime.UtcNow.AddDays(new Random().Next(365)),
+                CreatedAt = DateTime.UtcNow.AddDays(new Random().Next(-365, 0))
             };
 
-        public static EventBuilder CreateEvent(string eventName) => new EventBuilder(eventName);
+        public static EventBuilder CreateEvent(string eventName) =>
+            new EventBuilder(eventName);
 
         public EventBuilder InCity(string city)
         {
@@ -29,9 +32,21 @@ namespace WebApi.IntegrationTests.Helpers
             return this;
         }
 
-        public EventBuilder WithId(Guid id)
+        public EventBuilder WithPartnerId(Guid partnerId)
         {
-            _event.EventId = id;
+            _event.PartnerId = partnerId;
+            return this;
+        }
+
+        public EventBuilder WithEventId(Guid eventId)
+        {
+            _event.EventId = eventId;
+            return this;
+        }
+
+        public EventBuilder CreatedAt(DateTime createdAt)
+        {
+            _event.CreatedAt = createdAt;
             return this;
         }
 
