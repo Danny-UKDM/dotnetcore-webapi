@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using WebApi.Controllers;
 using WebApi.Data.Commands;
-using WebApi.Models;
+using WebApi.Models.Events;
 using WebApi.Tests.Helpers;
 using Xunit;
 

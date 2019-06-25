@@ -1,5 +1,5 @@
 ﻿using System;
-using WebApi.Models;
+using WebApi.Models.Events;
 
 namespace WebApi.IntegrationTests.Helpers
 {
@@ -20,7 +20,7 @@ namespace WebApi.IntegrationTests.Helpers
                 Latitude = new Random().Next(-90, 90),
                 Longitude = new Random().Next(-180, 180),
                 OccursOn = DateTime.UtcNow.AddDays(new Random().Next(365)),
-                CreatedAt = DateTime.UtcNow.AddDays(new Random().Next(-365, 0))
+                CreatedAt = DateTime.UtcNow
             };
 
         public static EventBuilder CreateEvent(string eventName) =>
@@ -32,24 +32,23 @@ namespace WebApi.IntegrationTests.Helpers
             return this;
         }
 
-        public EventBuilder WithPartnerId(Guid partnerId)
-        {
-            _event.PartnerId = partnerId;
-            return this;
-        }
-
-        public EventBuilder WithEventId(Guid eventId)
-        {
-            _event.EventId = eventId;
-            return this;
-        }
-
-        public EventBuilder CreatedAt(DateTime createdAt)
-        {
-            _event.CreatedAt = createdAt;
-            return this;
-        }
-
         public Event Build() => _event;
+    }
+
+    public static class EventBuilderExtensions
+    {
+        public static EventWriteModel ToEventWriteModel(this Event @event) =>
+            new EventWriteModel
+            {
+                PartnerId = @event.PartnerId,
+                EventName = @event.EventName,
+                AddressLine1 = @event.AddressLine1,
+                PostalCode = @event.PostalCode,
+                City = @event.City,
+                Country = @event.Country,
+                Latitude = @event.Latitude,
+                Longitude = @event.Longitude,
+                OccursOn = @event.OccursOn,
+            };
     }
 }

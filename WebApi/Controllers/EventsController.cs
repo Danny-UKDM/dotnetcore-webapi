@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebApi.Data.Commands;
 using WebApi.Data.Queries;
-using WebApi.Models;
+using WebApi.Models.Events;
 
 namespace WebApi.Controllers
 {
@@ -70,19 +70,20 @@ namespace WebApi.Controllers
         //-- POST api/Events
         [HttpPost]
         [ProducesResponseType(201)]
-        [ProducesResponseType(400, Type = typeof(Event))]
-        public async Task<IActionResult> Post([BindRequired, FromBody]Event @event)
+        [ProducesResponseType(400, Type = typeof(EventWriteModel))]
+        public async Task<IActionResult> Post([BindRequired, FromBody]EventWriteModel eventWriteModel)
         {
             if (!ModelState.IsValid)
-                return BadRequest(@event);
+                return BadRequest(eventWriteModel);
 
+            var insertEventCommand = new InsertEventCommand(eventWriteModel);
             using (var session = _sessionFactory.CreateCommandSession())
             {
-                await session.ExecuteAsync(new InsertEventCommand(@event));
+                await session.ExecuteAsync(insertEventCommand);
                 session.Commit();
             }
 
-            return CreatedAtAction(nameof(Get), new { eventId = @event.EventId }, @event);
+            return CreatedAtAction(nameof(Get), new { eventId = insertEventCommand.Event.EventId }, insertEventCommand.Event);
         }
 
         //-- PUT api/Events/{eventId}

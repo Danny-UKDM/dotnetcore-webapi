@@ -59,8 +59,8 @@ create table events
     country varchar(100) not null,
     latitude float8 not null,
     longitude float8 not null,
-    createdAt timestamp not null,
-    occursOn timestamp not null
+    createdAt timestamptz not null,
+    occursOn timestamptz not null
 );
 
 create table videos

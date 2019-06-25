@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using WebApi.IntegrationTests.Data;
 using WebApi.IntegrationTests.Helpers;
-using WebApi.Models;
+using WebApi.Models.Events;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Post
@@ -29,17 +31,19 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
                                     .InCity("Nice Test City City")
                                     .Build();
 
-                var httpContent = new ObjectContent<Event>(Event, new JsonMediaTypeFormatter(), "application/json");
+                var eventWriteModel = Event.ToEventWriteModel();
+
+                var httpContent = new ObjectContent<EventWriteModel>(eventWriteModel, new JsonMediaTypeFormatter(), "application/json");
 
                 Response = await _factory.HttpClient
                                          .PostAsync("/api/events", httpContent);
             }
 
-            public async Task<Event> LoadStoredEvent()
+            public async Task<IEnumerable<Event>> LoadStoredEvents()
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(Event.EventId));
+                    return await session.ExecuteAsync(new GetEventsQuery());
                 }
             }
 
@@ -47,7 +51,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { Event.EventId }));
+                    await session.ExecuteAsync(new DeleteEventsCommand());
                     session.Commit();
                 }
             }
@@ -67,10 +71,18 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
                     .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
-        public async Task ThenTheEventShouldBeStored() =>
-            (await _fixture.LoadStoredEvent()).Should()
-                                              .BeEquivalentTo(_fixture.Event, o =>
-                                                   o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
-                                                    .WhenTypeIs<DateTime>());
+        public async Task ThenTheEventShouldBeStored()
+        {
+            var storedEvent = (await _fixture.LoadStoredEvents()).First();
+
+            storedEvent.Should()
+                       .BeEquivalentTo(_fixture.Event, o =>
+                            o.Excluding(e => e.EventId)
+                             .Using<DateTime>(t => t.Subject.Should()
+                                                    .BeCloseTo(t.Expectation)).WhenTypeIs<DateTime>());
+
+            storedEvent.EventId.Should().NotBeEmpty()
+                       .And.Subject.HasValue.Should().BeTrue();
+        }
     }
 }

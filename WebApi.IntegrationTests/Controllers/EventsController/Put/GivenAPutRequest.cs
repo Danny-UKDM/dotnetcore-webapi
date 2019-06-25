@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using WebApi.IntegrationTests.Data;
 using WebApi.IntegrationTests.Helpers;
-using WebApi.Models;
+using WebApi.Models.Events;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.EventsController.Put
