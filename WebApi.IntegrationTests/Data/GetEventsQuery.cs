@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using Badger.Data;
 using WebApi.Models.Events;
 
-namespace WebApi.Data.Queries
+namespace WebApi.IntegrationTests.Data
 {
-    internal class GetEventsByPartnerIdQuery : IQuery<IEnumerable<Event>>
+    internal class GetEventsQuery : IQuery<IEnumerable<Event>>
     {
-        public Guid PartnerId { get; }
-
-        public GetEventsByPartnerIdQuery(Guid partnerId) =>
-            PartnerId = partnerId;
-
         public IPreparedQuery<IEnumerable<Event>> Prepare(IQueryBuilder builder) =>
             builder
                 .WithSql(@"
@@ -25,11 +20,9 @@ select
     country,
     latitude,
     longitude,
-    createdAt,
-    occursOn
-from events
-where partnerId = @partnerId")
-                .WithParameter("partnerId", PartnerId)
+    timezone('UTC', createdAt)::timestamptz,
+    timezone('UTC', occursOn)::timestamptz
+from events")
                 .WithMapper(r => new Event
                 {
                     EventId = r.Get<Guid>("eventId"),

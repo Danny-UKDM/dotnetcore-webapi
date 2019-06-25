@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Badger.Data;
-using WebApi.Models;
+using WebApi.Models.Events;
 
 namespace WebApi.Data.Queries
 {

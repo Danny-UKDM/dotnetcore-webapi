@@ -1,6 +1,6 @@
 ﻿using System;
 using Badger.Data;
-using WebApi.Models;
+using WebApi.Models.Events;
 
 namespace WebApi.Data.Commands
 {

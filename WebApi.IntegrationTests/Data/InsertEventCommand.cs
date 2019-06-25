@@ -1,5 +1,5 @@
 ﻿using Badger.Data;
-using WebApi.Models;
+using WebApi.Models.Events;
 
 namespace WebApi.IntegrationTests.Data
 {
