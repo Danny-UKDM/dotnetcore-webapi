@@ -12,7 +12,7 @@ using Xunit;
 namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 {
     [Collection(nameof(TestCollection))]
-    public class GivenAGetRequest : IClassFixture<GivenAGetRequest.GetRequest>
+    public class GivenAGetByEventRequest : IClassFixture<GivenAGetByEventRequest.GetRequest>
     {
         public class GetRequest : IAsyncLifetime
         {
@@ -49,7 +49,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
         private readonly GetRequest _fixture;
 
-        public GivenAGetRequest(GetRequest fixture) => _fixture = fixture;
+        public GivenAGetByEventRequest(GetRequest fixture) => _fixture = fixture;
 
         [Fact]
         public void ThenTheExpectedResponseWasReceived() =>
