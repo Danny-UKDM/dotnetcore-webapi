@@ -30,7 +30,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
             _controller.ModelState.AddModelError(nameof(Event.Latitude), "Invalid Latitude");
             _controller.ModelState.AddModelError(nameof(Event.Longitude), "Invalid Longitude");
 
-            var result = await _controller.Put(Guid.NewGuid(), new Event());
+            var result = await _controller.Put(Guid.NewGuid(), new EventWriteModel());
 
             result.Should().BeOfType<BadRequestObjectResult>();
         }
@@ -42,7 +42,7 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
                 .ExecuteAsync(Arg.Any<UpdateEventCommand>())
                 .Returns(0);
             
-            var result = await _controller.Put(Guid.NewGuid(), new Event());
+            var result = await _controller.Put(Guid.NewGuid(), new EventWriteModel());
 
             result.Should().BeOfType<NotFoundResult>();
         }
@@ -50,18 +50,20 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsNoContentWhenUpdateSuccessful()
         {
-            var @event = EventBuilder.CreateEvent("Some Video").Build();
+            var @event = EventBuilder.CreateEvent("Some Event").Build();
+            var eventWriteModel = @event.ToEventWriteModel();
+
             _session
                 .ExecuteAsync(Arg.Is<UpdateEventCommand>(c =>
                     c.EventId == @event.EventId &&
-                    c.Details == @event))
+                    c.EventWriteModel == eventWriteModel))
                 .Returns(1);
 
-            var result = await _controller.Put(@event.EventId, @event);
+            var result = await _controller.Put(@event.EventId, eventWriteModel);
 
             Received.InOrder(() =>
             {
-                _session.Received(1).ExecuteAsync(Arg.Any<UpdateEventCommand>());
+                _session.Received(1).ExecuteAsync(Arg.Is<UpdateEventCommand>(c => c.EventWriteModel == eventWriteModel));
                 _session.Received(1).Commit();
                 _session.Received(1).Dispose();
             });

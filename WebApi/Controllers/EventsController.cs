@@ -89,16 +89,16 @@ namespace WebApi.Controllers
         //-- PUT api/Events/{eventId}
         [HttpPut("{eventId}")]
         [ProducesResponseType(204)]
-        [ProducesResponseType(400, Type = typeof(Event))]
+        [ProducesResponseType(400, Type = typeof(EventWriteModel))]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Put(Guid eventId, [BindRequired, FromBody]Event @event)
+        public async Task<IActionResult> Put(Guid eventId, [BindRequired, FromBody]EventWriteModel eventWriteModel)
         {
             if (!ModelState.IsValid)
-                return BadRequest(@event);
+                return BadRequest(eventWriteModel);
 
             using (var session = _sessionFactory.CreateCommandSession())
             {
-                var affected = await session.ExecuteAsync(new UpdateEventCommand(eventId, @event));
+                var affected = await session.ExecuteAsync(new UpdateEventCommand(eventId, eventWriteModel));
                 session.Commit();
 
                 return affected != 0
