@@ -6,15 +6,15 @@ namespace WebApi.Data.Commands
 {
     internal class UpdateEventCommand : ICommand
     {
-        public Guid EventId { get; }
-        public Event Details { get; }
+        public Guid EventId { get; internal set; }
+        public EventWriteModel EventWriteModel { get; internal set; }
 
-        public UpdateEventCommand(Guid eventId, Event details)
+        public UpdateEventCommand(Guid eventId, EventWriteModel eventWriteModel)
         {
             EventId = eventId;
-            Details = details;
+            EventWriteModel = eventWriteModel;
         }
-        
+
         public IPreparedCommand Prepare(ICommandBuilder builder) =>
             builder
                 .WithSql(@"
@@ -29,15 +29,15 @@ update events set
     occursOn = @occursOn
 where eventId = @eventId")
                 .WithParameter("eventId", EventId)
-                .WithParameter("partnerId", Details.PartnerId)
-                .WithParameter("eventName", Details.EventName)
-                .WithParameter("addressLine1", Details.AddressLine1)
-                .WithParameter("postalCode", Details.PostalCode)
-                .WithParameter("city", Details.City)
-                .WithParameter("country", Details.Country)
-                .WithParameter("latitude", Details.Latitude)
-                .WithParameter("longitude", Details.Longitude)
-                .WithParameter("occursOn", Details.OccursOn)
+                .WithParameter("partnerId", EventWriteModel.PartnerId)
+                .WithParameter("eventName", EventWriteModel.EventName)
+                .WithParameter("addressLine1", EventWriteModel.AddressLine1)
+                .WithParameter("postalCode", EventWriteModel.PostalCode)
+                .WithParameter("city", EventWriteModel.City)
+                .WithParameter("country", EventWriteModel.Country)
+                .WithParameter("latitude", EventWriteModel.Latitude)
+                .WithParameter("longitude", EventWriteModel.Longitude)
+                .WithParameter("occursOn", EventWriteModel.OccursOn)
                 .Build();
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -35,11 +37,11 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
                                          .DeleteAsync($"/api/events/{Event.EventId}");
             }
 
-            public async Task<Event> LoadStoredEvent()
+            public async Task<IEnumerable<Event>> LoadStoredEvents()
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(Event.EventId));
+                    return await session.ExecuteAsync(new GetEventsQuery());
                 }
             }
 
@@ -47,14 +49,14 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] {Event.EventId}));
+                    await session.ExecuteAsync(new DeleteEventsCommand());
                     session.Commit();
                 }
             }
         }
 
         private readonly DeleteRequest _fixture;
-        
+
         public GivenADeleteRequest(DeleteRequest fixture) => _fixture = fixture;
 
         [Fact]
@@ -63,6 +65,6 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
 
         [Fact]
         public async Task ThenTheEventShouldNotExist() =>
-            (await _fixture.LoadStoredEvent()).Should().BeNull();
+            (await _fixture.LoadStoredEvents()).Should().BeNullOrEmpty();
     }
 }

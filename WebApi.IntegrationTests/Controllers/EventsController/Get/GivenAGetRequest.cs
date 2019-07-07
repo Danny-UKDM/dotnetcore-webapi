@@ -24,7 +24,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Cool Test Video")
+                Event = EventBuilder.CreateEvent("Cool Test Event")
                                     .InCity("Cool Test City")
                                     .Build();
                 using (var session = _factory.SessionFactory.CreateCommandSession())
@@ -41,7 +41,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { Event.EventId }));
+                    await session.ExecuteAsync(new DeleteEventsCommand());
                     session.Commit();
                 }
             }
@@ -61,10 +61,13 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
                     .BeEquivalentTo(new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" });
 
         [Fact]
-        public async Task ThenTheResponseContentHasExpectedValue() =>
-            (await _fixture.Response.Content.ReadAsAsync<Event>()).Should()
-                                                                  .BeEquivalentTo(_fixture.Event, o =>
-                                                                       o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
-                                                                        .WhenTypeIs<DateTime>());
+        public async Task ThenTheResponseContentHasExpectedValue()
+        {
+            var @event = await _fixture.Response.Content.ReadAsAsync<Event>();
+
+            @event.Should().BeEquivalentTo(_fixture.Event, o =>
+                o.Using<DateTime>(t => t.Subject.Should()
+                                        .BeCloseTo(t.Expectation, 500)).WhenTypeIs<DateTime>());
+        }
     }
 }

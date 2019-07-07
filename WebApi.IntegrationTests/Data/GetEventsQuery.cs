@@ -20,8 +20,8 @@ select
     country,
     latitude,
     longitude,
-    timezone('UTC', createdAt)::timestamptz,
-    timezone('UTC', occursOn)::timestamptz
+    createdAt,
+    occursOn
 from events")
                 .WithMapper(r => new Event
                 {

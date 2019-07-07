@@ -27,8 +27,8 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Nice Test Video")
-                                    .InCity("Nice Test City City")
+                Event = EventBuilder.CreateEvent("Nice Test Event")
+                                    .InCity("Nice Test City")
                                     .Build();
 
                 var eventWriteModel = Event.ToEventWriteModel();
@@ -75,11 +75,10 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
         {
             var storedEvent = (await _fixture.LoadStoredEvents()).First();
 
-            storedEvent.Should()
-                       .BeEquivalentTo(_fixture.Event, o =>
-                            o.Excluding(e => e.EventId)
-                             .Using<DateTime>(t => t.Subject.Should()
-                                                    .BeCloseTo(t.Expectation)).WhenTypeIs<DateTime>());
+            storedEvent.Should().BeEquivalentTo(_fixture.Event, o =>
+                o.Excluding(e => e.EventId)
+                 .Using<DateTime>(t => t.Subject.Should()
+                                        .BeCloseTo(t.Expectation, 500)).WhenTypeIs<DateTime>());
 
             storedEvent.EventId.Should().NotBeEmpty()
                        .And.Subject.HasValue.Should().BeTrue();

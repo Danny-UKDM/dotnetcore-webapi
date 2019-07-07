@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -17,7 +19,6 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
         public class PutRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            private Event _originalEvent;
             public Event UpdatedEvent { get; private set; }
             public HttpResponseMessage Response { get; private set; }
 
@@ -25,30 +26,32 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
 
             public async Task InitializeAsync()
             {
-                _originalEvent = EventBuilder.CreateEvent("Cool OG Event")
+                var originalEvent = EventBuilder.CreateEvent("Cool OG Event")
                                              .InCity("Cool OG City")
                                              .Build();
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    session.Execute(new InsertEventCommand(_originalEvent));
+                    session.Execute(new InsertEventCommand(originalEvent));
                     session.Commit();
                 }
 
-                UpdatedEvent = _originalEvent;
+                UpdatedEvent = originalEvent;
                 UpdatedEvent.EventName = "Cool New Event";
                 UpdatedEvent.City = "Cool New City";
 
-                var httpContent = new ObjectContent<Event>(UpdatedEvent, new JsonMediaTypeFormatter(), "application/json");
+                var updatedEventWriteModel = UpdatedEvent.ToEventWriteModel();
+
+                var httpContent = new ObjectContent<EventWriteModel>(updatedEventWriteModel, new JsonMediaTypeFormatter(), "application/json");
 
                 Response = await _factory.HttpClient
-                                         .PutAsync($"/api/events/{_originalEvent.EventId}", httpContent);
+                                         .PutAsync($"/api/events/{originalEvent.EventId}", httpContent);
             }
 
-            public async Task<Event> LoadStoredEvent()
+            public async Task<IEnumerable<Event>> LoadStoredEvents()
             {
                 using (var session = _factory.SessionFactory.CreateQuerySession())
                 {
-                    return await session.ExecuteAsync(new GetEventByIdQuery(_originalEvent.EventId));
+                    return await session.ExecuteAsync(new GetEventsQuery());
                 }
             }
 
@@ -56,7 +59,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
             {
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new DeleteRowsByEventIdCommand(new[] { _originalEvent.EventId, UpdatedEvent.EventId }));
+                    await session.ExecuteAsync(new DeleteEventsCommand());
                     session.Commit();
                 }
             }
@@ -71,10 +74,13 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
             _fixture.Response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         [Fact]
-        public async Task ThenTheEventShouldBeUpdated() =>
-            (await _fixture.LoadStoredEvent()).Should()
-                                              .BeEquivalentTo(_fixture.UpdatedEvent, o => 
-                                                   o.Using<DateTime>(d => d.Subject.Should().BeCloseTo(d.Expectation))
-                                                    .WhenTypeIs<DateTime>());
+        public async Task ThenTheEventShouldBeUpdated()
+        {
+            var storedEvent = (await _fixture.LoadStoredEvents()).First();
+
+            storedEvent.Should().BeEquivalentTo(_fixture.UpdatedEvent, o =>
+                o.Using<DateTime>(t => t.Subject.Should()
+                                        .BeCloseTo(t.Expectation, 500)).WhenTypeIs<DateTime>());
+        }
     }
 }
