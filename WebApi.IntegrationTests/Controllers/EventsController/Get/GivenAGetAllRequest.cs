@@ -27,15 +27,12 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
             public async Task InitializeAsync()
             {
-                Event1 = EventBuilder.CreateEvent("Cool Test Event")
-                                    .InCity("Cool Test City")
-                                    .Build();
-                Event2 = EventBuilder.CreateEvent("Cooler Test Event")
-                                     .InCity("Cooler Test City")
-                                     .Build();
-                Event3 = EventBuilder.CreateEvent("Coolest Test Event")
-                                     .InCity("Coolest Test City")
-                                     .Build();
+                var (event1, _) = EventBuilder.CreateEvent("Cool Event").Build();
+                var (event2, _) = EventBuilder.CreateEvent("Cooler Event").Build();
+                var (event3, _) = EventBuilder.CreateEvent("Coolest Event").Build();
+                Event1 = event1;
+                Event2 = event2;
+                Event3 = event3;
 
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {

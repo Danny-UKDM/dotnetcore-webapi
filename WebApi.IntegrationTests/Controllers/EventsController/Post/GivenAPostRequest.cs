@@ -27,11 +27,8 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Post
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Nice Test Event")
-                                    .InCity("Nice Test City")
-                                    .Build();
-
-                var eventWriteModel = Event.ToEventWriteModel();
+                var (@event, eventWriteModel) = EventBuilder.CreateEvent("Cool Event").Build();
+                Event = @event;
 
                 var httpContent = new ObjectContent<EventWriteModel>(eventWriteModel, new JsonMediaTypeFormatter(), "application/json");
 

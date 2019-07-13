@@ -24,9 +24,9 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Cool Test Event")
-                                    .InCity("Cool Test City")
-                                    .Build();
+                var (@event, _) = EventBuilder.CreateEvent("Cool Event").Build();
+                Event = @event;
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
                     await session.ExecuteAsync(new InsertEventCommand(Event));

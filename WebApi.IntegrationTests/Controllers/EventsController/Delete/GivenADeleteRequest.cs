@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,24 +16,22 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Delete
         public class DeleteRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            public Event Event { get; private set; }
             public HttpResponseMessage Response { get; private set; }
 
             public DeleteRequest(ApiWebApplicationFactory factory) => _factory = factory;
 
             public async Task InitializeAsync()
             {
-                Event = EventBuilder.CreateEvent("Cool Removable Event")
-                                    .InCity("Cool Removable City")
-                                    .Build();
+                var (@event, _) = EventBuilder.CreateEvent("Cool Removable Event").Build();
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new InsertEventCommand(Event));
+                    await session.ExecuteAsync(new InsertEventCommand(@event));
                     session.Commit();
                 }
 
                 Response = await _factory.HttpClient
-                                         .DeleteAsync($"/api/events/{Event.EventId}");
+                                         .DeleteAsync($"/api/events/{@event.EventId}");
             }
 
             public async Task<IEnumerable<Event>> LoadStoredEvents()
