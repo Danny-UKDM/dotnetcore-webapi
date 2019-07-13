@@ -26,20 +26,22 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Put
 
             public async Task InitializeAsync()
             {
-                var originalEvent = EventBuilder.CreateEvent("Cool OG Event")
-                                             .InCity("Cool OG City")
-                                             .Build();
+                var partnerId = Guid.NewGuid();
+                var (originalEvent, _) = EventBuilder.CreateEvent("Cool OG Event")
+                                                       .WithPartnerId(partnerId)
+                                                       .Build();
+
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
                     session.Execute(new InsertEventCommand(originalEvent));
                     session.Commit();
                 }
 
-                UpdatedEvent = originalEvent;
-                UpdatedEvent.EventName = "Cool New Event";
-                UpdatedEvent.City = "Cool New City";
-
-                var updatedEventWriteModel = UpdatedEvent.ToEventWriteModel();
+                var (updatedEvent, updatedEventWriteModel) = EventBuilder.CreateEvent("Cool Updated Event")
+                                                                           .WithPartnerId(partnerId)
+                                                                           .WithEventId(originalEvent.EventId)
+                                                                           .Build();
+                UpdatedEvent = updatedEvent;
 
                 var httpContent = new ObjectContent<EventWriteModel>(updatedEventWriteModel, new JsonMediaTypeFormatter(), "application/json");
 
