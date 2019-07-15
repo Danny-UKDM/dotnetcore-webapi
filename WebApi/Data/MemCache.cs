@@ -8,34 +8,30 @@ namespace WebApi.Data
 {
     public sealed class MemCache<T> where T : class
     {
-        private readonly ILogger<MemCache<T>> _logger;
+        private static readonly ILogger<MemCache<T>> Logger = new Logger<MemCache<T>>(new LoggerFactory());
+        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1);
         private readonly MemoryCache _memoryCache;
-        private static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1);
 
-        public MemCache(ILogger<MemCache<T>> logger)
-        {
-            _logger = logger;
-            _memoryCache = MemoryCache.Default;
-        }
+        public MemCache() => _memoryCache = MemoryCache.Default;
 
         public async Task<T> Get(string cacheKey, Func<Task<T>> retrievalFuncAsync, TimeSpan cacheTimeout)
         {
-            var cached = this._memoryCache.Get(cacheKey);
+            var cached = _memoryCache.Get(cacheKey);
             if (cached != null)
             {
-                _logger.LogDebug($"Retrieved CacheKey: {cacheKey}");
+                Logger.LogDebug($"Retrieved CacheKey: {cacheKey}");
                 return (T)cached;
             }
 
-            await SemaphoreSlim.WaitAsync();
+            await _semaphoreSlim.WaitAsync();
 
             try
             {
                 //Double check it's not been retrieved whilst awaiting the lock
-                cached = this._memoryCache.Get(cacheKey);
+                cached = _memoryCache.Get(cacheKey);
                 if (cached != null)
                 {
-                    _logger.LogDebug($"Retrieved CacheKey: {cacheKey}");
+                    Logger.LogDebug($"Retrieved CacheKey: {cacheKey}");
                     return (T)cached;
                 }
 
@@ -43,9 +39,7 @@ namespace WebApi.Data
 
                 //Don't cache but return result on failure
                 if (result == null)
-                {
                     return null;
-                }
 
                 var cacheItemPolicy = new CacheItemPolicy
                 {
@@ -53,14 +47,14 @@ namespace WebApi.Data
                     Priority = CacheItemPriority.Default
                 };
 
-                _logger.LogDebug($"Added CacheKey: {cacheKey}");
+                Logger.LogDebug($"Added CacheKey: {cacheKey}");
                 _memoryCache.Set(cacheKey, result, cacheItemPolicy);
 
                 return result;
             }
             finally
             {
-                SemaphoreSlim.Release();
+                _semaphoreSlim.Release();
             }
         }
     }

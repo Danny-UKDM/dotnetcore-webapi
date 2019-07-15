@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Data;
 using WebApi.Models;
+using WebApi.Models.Images;
 
 namespace WebApi.Controllers
 {

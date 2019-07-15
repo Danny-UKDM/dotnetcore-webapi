@@ -6,6 +6,7 @@ using NSubstitute;
 using WebApi.Controllers;
 using WebApi.Data;
 using WebApi.Models;
+using WebApi.Models.Images;
 using Xunit;
 
 namespace WebApi.Tests.Controllers.ImagesControllerTests

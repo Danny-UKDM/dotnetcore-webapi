@@ -35,6 +35,7 @@ namespace WebApi
                       .WithProviderFactory(NpgsqlFactory.Instance)));
 
             services.AddTransient<IImageRepository, ImageRepository>();
+            services.AddTransient<IEventRepository, EventRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

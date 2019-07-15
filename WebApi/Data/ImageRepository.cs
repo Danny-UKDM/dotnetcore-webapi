@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Configuration;
 using WebApi.Models;
+using WebApi.Models.Images;
 
 namespace WebApi.Data
 {

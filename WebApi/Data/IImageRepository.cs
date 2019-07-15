@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using WebApi.Models;
+using WebApi.Models.Images;
 
 namespace WebApi.Data
 {
