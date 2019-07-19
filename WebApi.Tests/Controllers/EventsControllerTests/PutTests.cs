@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using WebApi.Controllers;
-using WebApi.Data.Commands;
+using WebApi.Data;
 using WebApi.Models.Events;
 using WebApi.Tests.Helpers;
 using Xunit;
@@ -14,14 +13,28 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
 {
     public class PutTests
     {
-        private readonly ICommandSession _session;
         private readonly EventsController _controller;
+        private readonly IEventRepository _eventRepository;
 
         public PutTests()
         {
-            var sessionFactory = Substitute.For<ISessionFactory>();
-            _session = sessionFactory.CreateCommandSession();
-            _controller = new EventsController(sessionFactory);
+            _eventRepository = Substitute.For<IEventRepository>();
+            _controller = new EventsController(_eventRepository);
+        }
+
+        [Fact]
+        public async Task ReturnsNoContentWhenUpdateSuccessful()
+        {
+            var (@event, eventWriteModel) = EventBuilder.CreateEvent("Cool Event").Build();
+
+            _eventRepository
+                .UpdateEventAsync(Arg.Is<Guid>(g => g == @event.EventId),
+                    Arg.Is<EventWriteModel>(e => e == eventWriteModel))
+                .Returns(true);
+
+            var result = await _controller.Put(@event.EventId, eventWriteModel);
+
+            result.Should().BeOfType<NoContentResult>();
         }
 
         [Fact]
@@ -38,35 +51,13 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsNotFoundWhenEventMissing()
         {
-            _session
-                .ExecuteAsync(Arg.Any<UpdateEventCommand>())
-                .Returns(0);
-            
+            _eventRepository
+                .UpdateEventAsync(Arg.Any<Guid>(), Arg.Any<EventWriteModel>())
+                .Returns(false);
+
             var result = await _controller.Put(Guid.NewGuid(), new EventWriteModel());
 
             result.Should().BeOfType<NotFoundResult>();
-        }
-
-        [Fact]
-        public async Task ReturnsNoContentWhenUpdateSuccessful()
-        {
-            var (@event, eventWriteModel) = EventBuilder.CreateEvent("Cool Event").Build();
-
-            _session
-                .ExecuteAsync(Arg.Is<UpdateEventCommand>(c =>
-                    c.EventId == @event.EventId &&
-                    c.EventWriteModel == eventWriteModel))
-                .Returns(1);
-
-            var result = await _controller.Put(@event.EventId, eventWriteModel);
-
-            Received.InOrder(() =>
-            {
-                _session.Received(1).ExecuteAsync(Arg.Is<UpdateEventCommand>(c => c.EventWriteModel == eventWriteModel));
-                _session.Received(1).Commit();
-                _session.Received(1).Dispose();
-            });
-            result.Should().BeOfType<NoContentResult>();
         }
     }
 }
