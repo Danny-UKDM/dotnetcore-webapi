@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -13,12 +14,13 @@ using Xunit;
 namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 {
     [Collection(nameof(TestCollection))]
-    public class GivenAGetByEventRequest : IClassFixture<GivenAGetByEventRequest.GetRequest>
+    public class GivenAGetByPartnerRequest : IClassFixture<GivenAGetByPartnerRequest.GetRequest>
     {
         public class GetRequest : IAsyncLifetime
         {
             private readonly ApiWebApplicationFactory _factory;
-            public Event Event { get; private set; }
+            public Guid PartnerId { get; private set; }
+            public IEnumerable<Event> Events { get; private set; }
             public HttpResponseMessage Response { get; private set; }
             public MemoryCache MemoryCache => MemoryCache.Default;
 
@@ -26,17 +28,20 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
             public async Task InitializeAsync()
             {
-                var (@event, _) = EventBuilder.CreateEvent("Cool Event").Build();
-                Event = @event;
+                PartnerId = Guid.NewGuid();
+                var (event1, _) = EventBuilder.CreateEvent("Cool Event").WithPartnerId(PartnerId).Build();
+                var (event2, _) = EventBuilder.CreateEvent("Cool Event").WithPartnerId(PartnerId).Build();
+                Events = new List<Event> { event1, event2 };
 
                 using (var session = _factory.SessionFactory.CreateCommandSession())
                 {
-                    await session.ExecuteAsync(new InsertEventCommand(Event));
+                    await session.ExecuteAsync(new InsertEventCommand(event1));
+                    await session.ExecuteAsync(new InsertEventCommand(event2));
                     session.Commit();
                 }
 
                 Response = await _factory.HttpClient
-                                         .GetAsync($"/api/events/byevent/{Event.EventId}");
+                                         .GetAsync($"/api/events/bypartner/{PartnerId}");
             }
 
             public async Task DisposeAsync()
@@ -51,7 +56,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
         private readonly GetRequest _fixture;
 
-        public GivenAGetByEventRequest(GetRequest fixture) => _fixture = fixture;
+        public GivenAGetByPartnerRequest(GetRequest fixture) => _fixture = fixture;
 
         [Fact]
         public void ThenTheExpectedResponseWasReceived() =>
@@ -59,7 +64,7 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
 
         [Fact]
         public void ThenTheEventsAreCached() =>
-            _fixture.MemoryCache.Get(_fixture.Event.EventId.ToString()).Should().BeEquivalentTo(_fixture.Event, o =>
+            _fixture.MemoryCache.Get(_fixture.PartnerId.ToString()).Should().BeEquivalentTo(_fixture.Events, o =>
                 o.Using<DateTime>(t => t.Subject.Should()
                                         .BeCloseTo(t.Expectation)).WhenTypeIs<DateTime>());
 
@@ -71,9 +76,9 @@ namespace WebApi.IntegrationTests.Controllers.EventsController.Get
         [Fact]
         public async Task ThenTheResponseContentHasExpectedValue()
         {
-            var @event = await _fixture.Response.Content.ReadAsAsync<Event>();
+            var events = await _fixture.Response.Content.ReadAsAsync<IEnumerable<Event>>();
 
-            @event.Should().BeEquivalentTo(_fixture.Event, o =>
+            events.Should().BeEquivalentTo(_fixture.Events, o =>
                 o.Using<DateTime>(t => t.Subject.Should()
                                         .BeCloseTo(t.Expectation, 500)).WhenTypeIs<DateTime>());
         }
