@@ -41,8 +41,8 @@ where partnerId = @partnerId")
                     Country = r.Get<string>("country"),
                     Latitude = r.Get<double>("latitude"),
                     Longitude = r.Get<double>("longitude"),
-                    CreatedAt = r.Get<DateTime>("createdAt"),
-                    OccursOn = r.Get<DateTime>("occursOn")
+                    CreatedAt = r.Get<DateTime>("createdAt").ToUniversalTime(),
+                    OccursOn = r.Get<DateTime>("occursOn").ToUniversalTime()
                 })
                 .Build();
     }

@@ -12,8 +12,8 @@ namespace WebApi.Data
     {
         private readonly ISessionFactory _sessionFactory;
         private readonly MemCache<Event> _eventCache;
-        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
         private readonly MemCache<IEnumerable<Event>> _eventsCache;
+        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(10);
 
         public EventRepository(ISessionFactory sessionFactory)
         {
@@ -23,32 +23,32 @@ namespace WebApi.Data
         }
 
         public Task<Event> GetEventByIdAsync(Guid eventId) =>
-            _eventCache.Get(eventId.ToString(), () => GetEventById(eventId), _timeout);
+            _eventCache.Get(eventId.ToString(), async () => await GetEventById(eventId), _timeout);
 
-        private Task<Event> GetEventById(Guid eventId)
+        private async Task<Event> GetEventById(Guid eventId)
         {
             using (var session = _sessionFactory.CreateQuerySession())
             {
-                return session.ExecuteAsync(new GetEventByIdQuery(eventId));
+                return await session.ExecuteAsync(new GetEventByIdQuery(eventId));
             }
         }
 
         public Task<IEnumerable<Event>> GetAllEventsForPartnerAsync(Guid partnerId) =>
-            _eventsCache.Get(partnerId.ToString(), () => GetAllEventsForPartner(partnerId), _timeout);
+            _eventsCache.Get(partnerId.ToString(), async () => await GetAllEventsForPartner(partnerId), _timeout);
 
-        private Task<IEnumerable<Event>> GetAllEventsForPartner(Guid partnerId)
+        private async Task<IEnumerable<Event>> GetAllEventsForPartner(Guid partnerId)
         {
             using (var session = _sessionFactory.CreateQuerySession())
             {
-                return session.ExecuteAsync(new GetEventsByPartnerIdQuery(partnerId));
+                return await session.ExecuteAsync(new GetEventsByPartnerIdQuery(partnerId));
             }
         }
 
-        public Task<IEnumerable<Event>> GetAllEventsAsync()
+        public async Task<IEnumerable<Event>> GetAllEventsAsync()
         {
             using (var session = _sessionFactory.CreateQuerySession())
             {
-                return session.ExecuteAsync(new GetAllEventsQuery());
+                return await session.ExecuteAsync(new GetAllEventsQuery());
             }
         }
 
