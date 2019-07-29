@@ -2,9 +2,10 @@
 using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using NSubstitute;
 using WebApi.Controllers;
-using WebApi.Data.Commands;
+using WebApi.Data;
 using WebApi.Models.Events;
 using WebApi.Tests.Helpers;
 using Xunit;
@@ -13,14 +14,13 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
 {
     public class PostTests
     {
-        private readonly ICommandSession _session;
         private readonly EventsController _controller;
+        private readonly IEventRepository _eventRepository;
 
         public PostTests()
         {
-            var sessionFactory = Substitute.For<ISessionFactory>();
-            _session = sessionFactory.CreateCommandSession();
-            _controller = new EventsController(sessionFactory);
+            _eventRepository = Substitute.For<IEventRepository>();
+            _controller = new EventsController(_eventRepository);
         }
 
         [Fact]
@@ -37,21 +37,20 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         [Fact]
         public async Task ReturnsCreatedWhenModelStateValid()
         {
-            var (_, eventWriteModel) = EventBuilder.CreateEvent("Cool Event").Build();
+            var (@event, eventWriteModel) = EventBuilder.CreateEvent("Cool Event").Build();
+
+            _eventRepository
+                .SaveEventAsync(Arg.Is<EventWriteModel>(e => e == eventWriteModel))
+                .Returns(@event);
 
             var result = await _controller.Post(eventWriteModel);
-
-            Received.InOrder(() =>
-            {
-                _session.Received(1).ExecuteAsync(Arg.Is<InsertEventCommand>(c => c.EventWriteModel == eventWriteModel));
-                _session.Received(1).Commit();
-                _session.Received(1).Dispose();
-            });
 
             result.Should().BeOfType<CreatedAtActionResult>().Which
                   .Should().BeEquivalentTo(new
                   {
-                      ActionName = nameof(EventsController.Get)
+                      ActionName = nameof(EventsController.Get),
+                      RouteValues = new RouteValueDictionary { { "eventId", @event.EventId } },
+                      Value = @event
                   });
         }
     }

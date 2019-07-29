@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Badger.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using WebApi.Data.Commands;
-using WebApi.Data.Queries;
+using WebApi.Data;
 using WebApi.Models.Events;
 
 namespace WebApi.Controllers
@@ -15,10 +13,10 @@ namespace WebApi.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private readonly ISessionFactory _sessionFactory;
+        private readonly IEventRepository _eventRepository;
 
-        public EventsController(ISessionFactory sessionFactory) =>
-            _sessionFactory = sessionFactory;
+        public EventsController(IEventRepository eventRepository) =>
+            _eventRepository = eventRepository;
 
         //-- GET api/Events/All
         [HttpGet("All")]
@@ -26,13 +24,10 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetAll()
         {
-            using (var session = _sessionFactory.CreateQuerySession())
-            {
-                var events = await session.ExecuteAsync(new GetAllEventsQuery());
-                return events.Any()
-                    ? Ok(events)
-                    : (IActionResult)NotFound();
-            }
+            var events = await _eventRepository.GetAllEventsAsync();
+            return events.Any()
+                ? Ok(events)
+                : (IActionResult)NotFound();
         }
 
         //-- GET api/Events/ByEvent/{eventId}
@@ -41,14 +36,11 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Get(Guid eventId)
         {
-            using (var session = _sessionFactory.CreateQuerySession())
-            {
-                var @event = await session.ExecuteAsync(new GetEventByIdQuery(eventId));
+            var @event = await _eventRepository.GetEventByIdAsync(eventId);
 
-                return @event != null
-                    ? Ok(@event)
-                    : (IActionResult)NotFound();
-            }
+            return @event != null
+                ? Ok(@event)
+                : (IActionResult)NotFound();
         }
 
         //-- GET api/Events/ByPartner/{partnerId}
@@ -57,14 +49,11 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetAllForPartner(Guid partnerId)
         {
-            using (var session = _sessionFactory.CreateQuerySession())
-            {
-                var events = await session.ExecuteAsync(new GetEventsByPartnerIdQuery(partnerId));
+            var events = await _eventRepository.GetAllEventsForPartnerAsync(partnerId);
 
-                return events.Any()
-                    ? Ok(events)
-                    : (IActionResult)NotFound();
-            }
+            return events.Any()
+                ? Ok(events)
+                : (IActionResult)NotFound();
         }
 
         //-- POST api/Events
@@ -76,14 +65,9 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(eventWriteModel);
 
-            var insertEventCommand = new InsertEventCommand(eventWriteModel);
-            using (var session = _sessionFactory.CreateCommandSession())
-            {
-                await session.ExecuteAsync(insertEventCommand);
-                session.Commit();
-            }
+            var @event = await _eventRepository.SaveEventAsync(eventWriteModel);
 
-            return CreatedAtAction(nameof(Get), new { eventId = insertEventCommand.Event.EventId }, insertEventCommand.Event);
+            return CreatedAtAction(nameof(Get), new { eventId = @event.EventId }, @event);
         }
 
         //-- PUT api/Events/{eventId}
@@ -96,15 +80,12 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(eventWriteModel);
 
-            using (var session = _sessionFactory.CreateCommandSession())
-            {
-                var affected = await session.ExecuteAsync(new UpdateEventCommand(eventId, eventWriteModel));
-                session.Commit();
+            var eventUpdated = await _eventRepository.UpdateEventAsync(eventId, eventWriteModel);
 
-                return affected != 0
-                    ? NoContent()
-                    : (IActionResult)NotFound();
-            }
+            return eventUpdated
+                ? NoContent()
+                : (IActionResult)NotFound();
+
         }
 
         //-- DELETE api/Events/{eventId}
@@ -113,15 +94,11 @@ namespace WebApi.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> Delete(Guid eventId)
         {
-            using (var session = _sessionFactory.CreateCommandSession())
-            {
-                var affected = await session.ExecuteAsync(new DeleteEventCommand(eventId));
-                session.Commit();
+            var eventDeleted = await _eventRepository.DeleteEventAsync(eventId);
 
-                return affected != 0
-                    ? NoContent()
-                    : (IActionResult)NotFound();
-            }
+            return eventDeleted
+                ? NoContent()
+                : (IActionResult)NotFound();
         }
     }
 }

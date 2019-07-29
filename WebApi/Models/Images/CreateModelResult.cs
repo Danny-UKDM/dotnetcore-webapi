@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApi.Models
+namespace WebApi.Models.Images
 {
     public class CreateModelResult<T> where T : class
     {

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using WebApi.Controllers;
-using WebApi.Data.Queries;
+using WebApi.Data;
 using WebApi.Models.Events;
 using WebApi.Tests.Helpers;
 using Xunit;
@@ -15,26 +14,28 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
 {
     public class GetTests
     {
-        private readonly IQuerySession _session;
         private readonly EventsController _controller;
+        private readonly IEventRepository _eventRepository;
 
         public GetTests()
         {
-            var sessionFactory = Substitute.For<ISessionFactory>();
-            _session = sessionFactory.CreateQuerySession();
-            _controller = new EventsController(sessionFactory);
+            _eventRepository = Substitute.For<IEventRepository>();
+            _controller = new EventsController(_eventRepository);
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenNoEvents()
+        public async Task ReturnsOkWithEventWhenMatchingEventId()
         {
-            _session
-                .ExecuteAsync(Arg.Any<GetAllEventsQuery>())
-                .Returns(Enumerable.Empty<Event>());
+            var (@event, _) = EventBuilder.CreateEvent("Cool Event").Build();
 
-            var result = await _controller.GetAll();
+            _eventRepository
+                .GetEventByIdAsync(Arg.Is<Guid>(g => g == @event.EventId))
+                .Returns(@event);
 
-            result.Should().BeOfType<NotFoundResult>();
+            var result = await _controller.Get(@event.EventId);
+
+            result.Should().BeOfType<OkObjectResult>().Which.Value
+                  .Should().BeEquivalentTo(@event);
         }
 
         [Fact]
@@ -44,14 +45,9 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
             var (event2, _) = EventBuilder.CreateEvent("Cooler Event").Build();
             var (event3, _) = EventBuilder.CreateEvent("Coolest Event").Build();
 
-            _session
-                .ExecuteAsync(Arg.Any<GetAllEventsQuery>())
-                .Returns(new[]
-                {
-                    event1,
-                    event2,
-                    event3
-                });
+            _eventRepository
+                .GetAllEventsAsync()
+                .Returns(new[] { event1, event2, event3 });
 
             var result = await _controller.GetAll();
 
@@ -64,18 +60,6 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         }
 
         [Fact]
-        public async Task ReturnsNotFoundWhenNoEventsForPartner()
-        {
-            _session
-                .ExecuteAsync(Arg.Any<GetAllEventsQuery>())
-                .Returns(Enumerable.Empty<Event>());
-
-            var result = await _controller.GetAllForPartner(Guid.NewGuid());
-
-            result.Should().BeOfType<NotFoundResult>();
-        }
-
-        [Fact]
         public async Task ReturnsOkWithEventsWhenSomeEventsForPartner()
         {
             var partnerId = Guid.NewGuid();
@@ -83,14 +67,9 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
             var (event2, _) = EventBuilder.CreateEvent("Cooler Event").WithPartnerId(partnerId).Build();
             var (event3, _) = EventBuilder.CreateEvent("Coolest Event").WithPartnerId(partnerId).Build();
 
-            _session
-                .ExecuteAsync(Arg.Is<GetEventsByPartnerIdQuery>(q => q.PartnerId == partnerId))
-                .Returns(new[]
-                {
-                    event1,
-                    event2,
-                    event3
-                });
+            _eventRepository
+                .GetAllEventsForPartnerAsync(Arg.Is<Guid>(g => g == partnerId))
+                .Returns(new[] { event1, event2, event3 });
 
             var result = await _controller.GetAllForPartner(partnerId);
 
@@ -111,17 +90,27 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         }
 
         [Fact]
-        public async Task ReturnsOkWithEventWhenMatchingEventId()
+        public async Task ReturnsNotFoundWhenNoEvents()
         {
-            var (@event, _) = EventBuilder.CreateEvent("Cool Event").Build();
-            _session
-                .ExecuteAsync(Arg.Is<GetEventByIdQuery>(q => q.EventId == @event.EventId))
-                .Returns(@event);
+            _eventRepository
+                .GetAllEventsAsync()
+                .Returns(Enumerable.Empty<Event>());
 
-            var result = await _controller.Get(@event.EventId);
+            var result = await _controller.GetAll();
 
-            result.Should().BeOfType<OkObjectResult>().Which.Value
-                  .Should().BeEquivalentTo(@event);
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Fact]
+        public async Task ReturnsNotFoundWhenNoEventsForPartner()
+        {
+            _eventRepository
+                .GetAllEventsForPartnerAsync(Arg.Any<Guid>())
+                .Returns(Enumerable.Empty<Event>());
+
+            var result = await _controller.GetAllForPartner(Guid.NewGuid());
+
+            result.Should().BeOfType<NotFoundResult>();
         }
     }
 }

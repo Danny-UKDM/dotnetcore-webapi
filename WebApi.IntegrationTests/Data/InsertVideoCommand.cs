@@ -1,5 +1,6 @@
 ﻿using Badger.Data;
 using WebApi.Models;
+using WebApi.Models.Videos;
 
 namespace WebApi.IntegrationTests.Data
 {

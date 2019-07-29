@@ -1,34 +1,32 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Badger.Data;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using WebApi.Controllers;
-using WebApi.Data.Commands;
+using WebApi.Data;
 using Xunit;
 
 namespace WebApi.Tests.Controllers.EventsControllerTests
 {
     public class DeleteTests
     {
-        private readonly ICommandSession _session;
         private readonly EventsController _controller;
+        private readonly IEventRepository _eventRepository;
 
         public DeleteTests()
         {
-            var sessionFactory = Substitute.For<ISessionFactory>();
-            _session = sessionFactory.CreateCommandSession();
-            _controller = new EventsController(sessionFactory);
+            _eventRepository = Substitute.For<IEventRepository>();
+            _controller = new EventsController(_eventRepository);
         }
 
         [Fact]
         public async Task ReturnsNotFoundWhenEventMissing()
         {
-            _session
-                .ExecuteAsync(Arg.Any<DeleteEventCommand>())
-                .Returns(0);
-            
+            _eventRepository
+                .DeleteEventAsync(Arg.Any<Guid>())
+                .Returns(false);
+
             var result = await _controller.Delete(Guid.NewGuid());
 
             result.Should().BeOfType<NotFoundResult>();
@@ -38,19 +36,13 @@ namespace WebApi.Tests.Controllers.EventsControllerTests
         public async Task ReturnsNoContentWhenUpdateSuccessful()
         {
             var eventId = Guid.NewGuid();
-            _session
-                .ExecuteAsync(Arg.Is<DeleteEventCommand>(c =>
-                    c.EventId == eventId))
-                .Returns(1);
+
+            _eventRepository
+                .DeleteEventAsync(Arg.Is<Guid>(g => g == eventId))
+                .Returns(true);
 
             var result = await _controller.Delete(eventId);
 
-            Received.InOrder(() =>
-            {
-                _session.Received(1).ExecuteAsync(Arg.Any<DeleteEventCommand>());
-                _session.Received(1).Commit();
-                _session.Received(1).Dispose();
-            });
             result.Should().BeOfType<NoContentResult>();
         }
     }

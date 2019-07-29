@@ -8,6 +8,7 @@ using NSubstitute;
 using WebApi.Controllers;
 using WebApi.Data.Queries;
 using WebApi.Models;
+using WebApi.Models.Videos;
 using WebApi.Tests.Helpers;
 using Xunit;
 

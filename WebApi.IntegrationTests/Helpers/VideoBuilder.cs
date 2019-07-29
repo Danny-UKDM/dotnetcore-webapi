@@ -1,5 +1,6 @@
 ﻿using System;
 using WebApi.Models;
+using WebApi.Models.Videos;
 
 namespace WebApi.IntegrationTests.Helpers
 {

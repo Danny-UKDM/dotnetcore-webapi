@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.Models
+namespace WebApi.Models.Videos
 {
     public class Video
     {

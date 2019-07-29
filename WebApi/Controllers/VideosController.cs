@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebApi.Data.Commands;
 using WebApi.Data.Queries;
 using WebApi.Models;
+using WebApi.Models.Videos;
 
 namespace WebApi.Controllers
 {

@@ -6,6 +6,7 @@ using FluentAssertions;
 using WebApi.IntegrationTests.Data;
 using WebApi.IntegrationTests.Helpers;
 using WebApi.Models;
+using WebApi.Models.Videos;
 using Xunit;
 
 namespace WebApi.IntegrationTests.Controllers.VideosController.Put
